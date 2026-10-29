@@ -43,6 +43,10 @@
 .rows .tile-text { grid-area: text; margin: 0; }
 .rows .tile-slider, .rows .tile > .tile-state { grid-area: slider; }
 .rows .tile-more { top: calc(50% - 1.1rem); right: 0.75rem; }
+/* the music card under the dial, as tall as the taller of its two faces;
+   it steps aside while the media card shows */
+.shape-wide .music { flex: none; height: 8.8rem; }
+.shape-wide .with-media .music { display: none; }
 /* a room with a single light: its dial alone, in the middle */
 .shape-wide .view.solo .controls { grid-column-end: -1; justify-self: center; width: 100%; max-width: 30rem; }
 /* short wide screens (Echo Show 5): a little tighter */

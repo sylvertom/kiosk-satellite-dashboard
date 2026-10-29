@@ -18,7 +18,7 @@
   const K = window.Kiosk;
   const { CFG, HA, $, KS, params, el, esc, icon, setClass, toast, warn } = K;
   const { pressFx, armIdle, dim, undim, closeOverlay, dimmed, showView } = K;
-  const { homePlayer, favoriteKinds, folderItems, favoritesBar, loadFavorites, settingsItems } = K;
+  const { homePlayer, favoriteKinds, folderItems, favoritesBar, addCover, playFavorite, loadFavorites, settingsItems } = K;
 
   const app = $('app'), menuEl = $('menu'), handle = $('menu-handle');
   let swipedAt = 0, menuRoot = [], ringFolder = null;   // the folder on the Spot's ring, if one is
@@ -40,23 +40,6 @@
     pressFx(node);
     node.addEventListener('click', pick);
     return node;
-  }
-  // A cover in an icon's place (a favourite's artwork), shown once it has
-  // loaded: one that does not load leaves the icon. Web addresses only, and
-  // the page's own address is not passed on to where the cover comes from.
-  function addCover(button, slot, src) {
-    let url;
-    try { url = new URL(src, location.href); } catch (_) { return; }
-    if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
-    const img = el('img', 'cover');
-    img.alt = '';
-    img.decoding = 'async';
-    img.referrerPolicy = 'no-referrer';
-    img.addEventListener('load', () => button.classList.add('with-cover'));
-    img.addEventListener('error', () => img.remove());
-    img.src = url.href;
-    if (img.complete && img.naturalWidth) button.classList.add('with-cover');   // cached: no flash of the icon
-    slot.prepend(img);
   }
 
   // Round buttons (.ring-item) spread evenly on a ring around a button in the
@@ -116,7 +99,7 @@
   function act(it, folder) {
     const done = () => toast((folder ? folder.name + ' · ' : '') + it.name), failed = () => toast('Home Assistant did not answer');
     if (it.script) HA.call('script', 'turn_on', {}, it.script).then(done, failed);
-    else if (it.uri) HA.call('music_assistant', 'play_media', { media_id: it.uri, media_type: it.type }, homePlayer()).then(done, failed);
+    else if (it.uri) playFavorite(it).then(done, failed);
     else follow(it.link);
   }
 

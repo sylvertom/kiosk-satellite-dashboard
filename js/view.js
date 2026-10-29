@@ -1,7 +1,7 @@
 /* Kiosk dashboard: the room views. One per room: a header (the title, which
  * opens the room menu, the sensors, the modes and on the wide screens a
- * clock), the main slot, the light tiles, the media card and the room's
- * events. On the Spot the dial is the rim of the screen and the lights are
+ * clock), the main slot, the light tiles, the media card, the room's
+ * events and on the wide screens its music. On the Spot the dial is the rim of the screen and the lights are
  * a strip. */
 (() => {
   'use strict';
@@ -156,6 +156,9 @@
         media.onvisibility = (v) => setClass(view, 'with-media', v); // the main card makes room
       }
     }
+    // the music card under the dial, on the wide screens (it steps aside for the media card)
+    const music = shape !== 'round' && K.musicOf(room);
+    if (music) controls.appendChild(rise(K.makeMusic(music)));
     view.appendChild(controls);
 
     // lights: a grid of tiles, or on the round screen a strip of round
@@ -207,7 +210,7 @@
     view.appendChild(lights);
     // The stylesheet gives a room without modes, or with nothing but its main slider, more room.
     setClass(view, 'no-modes', modes.hidden);
-    setClass(view, 'solo', !tiles.length && !media && !(list && shape !== 'round'));
+    setClass(view, 'solo', !tiles.length && !media && !music && !(list && shape !== 'round'));
 
     // the Spot's dial is the rim of the screen and follows the main slot
     if (shape === 'round' && bars.length) {

@@ -50,7 +50,7 @@ html[data-theme="synthwave"] .clock { font-size: 2rem; min-width: 3.85em; }
 html[data-theme="synthwave"] .density-compact .clock { font-size: 1.85rem; }
 
 /* --------------------------------------------- neon on dark glass */
-html[data-theme="synthwave"] .chip, html[data-theme="synthwave"].shape-wide .tile, html[data-theme="synthwave"] .media, html[data-theme="synthwave"] .menu-panel,
+html[data-theme="synthwave"] .chip, html[data-theme="synthwave"].shape-wide .tile, html[data-theme="synthwave"] .media, html[data-theme="synthwave"] .music-favs, html[data-theme="synthwave"] .menu-panel,
 html[data-theme="synthwave"] .room-go, html[data-theme="synthwave"] .ring-item, html[data-theme="synthwave"] .menu-handle { box-shadow: var(--neon); }
 html[data-theme="synthwave"] .chip.on, html[data-theme="synthwave"] .tab.active, html[data-theme="synthwave"] .pop-actions button.on, html[data-theme="synthwave"] .power {
   box-shadow: 0 0 1rem rgba(var(--accent-rgb), 0.65);

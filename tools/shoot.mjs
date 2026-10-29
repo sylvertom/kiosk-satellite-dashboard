@@ -18,6 +18,7 @@ import { accentFollowsLight, pictures, gradients, themes } from './checks/theme.
 import { settingsSpot, settingsShow } from './checks/settings.mjs';
 import { alertsSpot, alertsShow } from './checks/alerts.mjs';
 import { eventsSpot, eventsShow } from './checks/events.mjs';
+import { musicShow8 } from './checks/music.mjs';
 
 await reset();
 await bedroomSpot();
@@ -52,4 +53,6 @@ await reset();
 await eventsSpot();
 await reset();
 await eventsShow();
+await reset();
+await musicShow8();
 await finish();

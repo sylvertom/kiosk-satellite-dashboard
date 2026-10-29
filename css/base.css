@@ -122,7 +122,7 @@ button, a { font: inherit; color: inherit; background: none; border: 0; padding:
 .scene.on { display: block; }
 .with-wallpaper { --surface: rgba(var(--veil-rgb), 0.76); --border: rgba(255, 255, 255, 0.1); --float: 0 0.3rem 1.2rem rgba(0, 0, 0, 0.3); }
 html[data-scheme="light"] .with-wallpaper { --surface: rgba(255, 255, 255, 0.88); --border: rgba(0, 0, 0, 0.07); --float: 0 0.3rem 1.2rem rgba(40, 30, 10, 0.14); }
-.with-wallpaper .tile, .with-wallpaper .chip, .with-wallpaper .media { box-shadow: var(--float); }
+.with-wallpaper .tile, .with-wallpaper .chip, .with-wallpaper .media, .with-wallpaper .music-favs { box-shadow: var(--float); }
 .with-wallpaper .title, .with-wallpaper .sensors, .with-wallpaper .clock, .with-wallpaper .bar-text, .shape-round .with-wallpaper .tile-name { text-shadow: var(--lift); }
 .views { position: absolute; inset: 0; }
 /* Inactive views stay in the DOM but are hidden from sight and from touch
