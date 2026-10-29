@@ -94,10 +94,11 @@ html[data-theme="xp"].shape-round .bar.off .power, html[data-theme="xp"] .popove
 html[data-theme="xp"].shape-wide .tile {
   padding-top: 2.6rem; border: 0.2rem solid #0a4fd6; border-top: 0; border-radius: 0.55rem 0.55rem 0.15rem 0.15rem;
   background: var(--xp-bar) top / 100% 2.1rem no-repeat, #ece9d8; box-shadow: var(--shadow);
+  padding-right: 0.95rem;   /* its button is in the title bar: the pill takes the width */
 }
 html[data-theme="xp"].shape-wide .tile::before { display: none; }
 html[data-theme="xp"].shape-wide .tile.on { border-color: #0a4fd6; }
-html[data-theme="xp"].shape-wide .tile-text { position: absolute; left: 0.6rem; right: 2.5rem; top: 0; height: 2.1rem; margin: 0; align-items: center; }
+html[data-theme="xp"].shape-wide .tile-text { position: absolute; grid-area: auto; left: 0.6rem; right: 2.5rem; top: 0; height: 2.1rem; margin: 0; align-items: center; }
 html[data-theme="xp"].shape-wide .tile-name { color: #ffffff; font-family: var(--font-title); font-weight: 700; text-shadow: 0.06rem 0.06rem 0 #0f1089; }
 html[data-theme="xp"].shape-wide .tile-extra { color: #d8e6ff; }
 html[data-theme="xp"].shape-wide .tile-slider, html[data-theme="xp"].shape-wide .tile > .tile-state { margin-top: auto; }

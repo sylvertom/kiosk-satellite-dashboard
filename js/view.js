@@ -6,10 +6,11 @@
 (() => {
   'use strict';
   const K = window.Kiosk;
-  const { CFG, root, states, el, esc, icon, clamp, isLight, isOn, setText, setClass, warn } = K;
+  const { CFG, root, states, el, esc, icon, clamp, isLight, isOn, setText, setClass, setVar, warn } = K;
   const { watch, shownPct, setBrightness, followLight, showWallpaper, pressFx, attachSwipe, closeOverlay } = K;
   const { makeSensor, sensorShown, sensorIds, makeChip, RIM_R, makeDial, makeBar, makeTile, makeMedia, eventsOf, makeEventsChip, makeEventsList } = K;
 
+  const TILE = { row: 14.5, card: 10.5 };   // rem: the narrowest a light tile gets on the wide screens, as a row or a card
   const views = {};
   const fits = [];   // each header's fitting of its modes
   let activeKey = null;
@@ -152,7 +153,7 @@
       media = makeMedia(room.media, shape === 'round' || root.classList.contains('density-compact'));
       if (shape !== 'round') {
         controls.appendChild(rise(media));
-        media.onvisibility = (v) => setClass(controls, 'with-media', v); // the main card makes room
+        media.onvisibility = (v) => setClass(view, 'with-media', v); // the main card makes room
       }
     }
     view.appendChild(controls);
@@ -188,7 +189,20 @@
     } else {
       if (list) lights.appendChild(list);
       for (const t of tiles) lights.appendChild(t);
-      lights.dataset.count = String(tiles.length);
+      // The tiles as rows, in as many columns as there is room for; where
+      // rows would stack four lights or more in one column, as cards, two
+      // columns or more. The rows of the grid as even as they can be (four
+      // lights: two and two, not three and one).
+      const fitColumns = () => {
+        const n = tiles.length, rem = parseFloat(getComputedStyle(root).fontSize), gap = parseFloat(getComputedStyle(lights).columnGap) || 0;
+        const fit = (min) => Math.max(1, Math.floor((lights.clientWidth + gap) / (min * rem + gap)));
+        const rows = fit(TILE.row) > 1 || n < 4, most = rows ? fit(TILE.row) : fit(TILE.card);
+        const cols = Math.max(1, Math.min(n, Math.ceil(n / Math.ceil(n / most))));
+        setClass(lights, 'rows', rows);
+        setVar(lights, '--cols', cols);
+        setClass(lights, 'lone', cols > 1 && n % cols === 1);
+      };
+      if (tiles.length) new ResizeObserver(fitColumns).observe(lights);
     }
     view.appendChild(lights);
     // The stylesheet gives a room without modes, or with nothing but its main slider, more room.

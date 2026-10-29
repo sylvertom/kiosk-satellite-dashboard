@@ -1,6 +1,6 @@
 // Checks of the rooms' events: the bedroom's calendars (the family's and work's) on the Spot and on the Show, the
 // page's clock at 10:00 on Wednesday 21 October 2026, when the gym session is over and work's stand-up is on.
-import { sleep, check, openPage, load, setClock, addEvent, noEvents, failCalls, callLog, insideRim, text } from './harness.mjs';
+import { sleep, check, openPage, load, setClock, changeRoom, addEvent, noEvents, failCalls, callLog, insideRim, text } from './harness.mjs';
 
 const TODAY = 'All day Bins out,Now Stand-up,12:30 Lunch with Sam,18:00 Swimming lesson';
 // The lines of a list, each its time and title.
@@ -9,12 +9,11 @@ const lines = (p, sel) => p.eval(`[...document.querySelectorAll(${JSON.stringify
 const panel = (p) => p.eval(`[...document.querySelectorAll('#pop-body > *')].map((e) => e.classList.contains('events-day') ? '# ' + e.textContent : [...e.querySelectorAll('.ev-time, .ev-title, .ev-where')].map((s) => s.textContent).join(' ')).join('|')`);
 const panelOpen = `!document.getElementById('popover').hidden && document.getElementById('popover').classList.contains('show')`;
 const accent = (p, sel) => p.eval(`(() => { const t = document.createElement('i'); t.style.color = 'var(--accent)'; document.querySelector('.view.active').append(t); const c = getComputedStyle(t).color; t.remove(); return getComputedStyle(document.querySelector(${JSON.stringify(sel)})).color === c; })()`);
-// A page whose config.js gives the bedroom other events.
-async function withEvents(width, height, events) {
+// A page whose config.js gives the bedroom other events (and other lights).
+async function withEvents(width, height, events, lights) {
   const p = await openPage(width, height);
   await setClock(p, 10);
-  await p.s('Page.addScriptToEvaluateOnNewDocument', { source: `(() => { let v; Object.defineProperty(window, 'KIOSK_CONFIG', { configurable: true, get: () => v, set: (c) => {
-    c.rooms.bedroom.events = ${JSON.stringify(events)}; v = c; } }); })();` });
+  await changeRoom(p, 'bedroom', lights ? { events, lights } : { events });
   return p;
 }
 
@@ -113,14 +112,11 @@ export async function eventsShow() {
   check(Math.abs(rows.h - 3 * rowH) < 1 && await text(p, `${TILE} .events-at`) === '1–3/4' && mark.l >= rows.l && mark.t >= tile.t && mark.l + mark.w <= tile.l + tile.w,
     `show 5: three lines in view, the mark in the corner says which (${await text(p, `${TILE} .events-at`)})`);
   check(await lines(p, TILE) === TODAY, `show 5: the same events as on the Spot (got ${await lines(p, TILE)})`);
+  check(await p.eval(`(() => { const g = document.querySelector('.view.active .lights'); return g.scrollHeight <= g.clientHeight + 1; })()`), 'show 5: the four lights in view under the tile, nothing to scroll');
   await p.shot('show5-events.png');
-  // A swipe inside the tile scrolls the events, not the grid; elsewhere it scrolls the grid.
+  // A swipe inside the tile scrolls the events.
   await p.drag(tile.x, tile.y + 10, tile.x, tile.y - 20, 10); await sleep(700);
-  check(await p.waitFor(`document.querySelector('${TILE} .events-at').textContent === '2–4/4'`) && await p.eval(`document.querySelector('.view.active .lights').scrollTop === 0`),
-    `show 5: a swipe up inside the tile brings the next event, the grid stays (${await text(p, `${TILE} .events-at`)})`);
-  await p.drag(first.x, first.t + 30, first.x, first.t - 50, 10); await sleep(700);   // from its icon: its pill is a slider
-  check(await p.eval(`document.querySelector('.view.active .lights').scrollTop > 0`), 'show 5: a swipe on the light tiles scrolls the grid');
-  await p.eval(`document.querySelector('.view.active .lights').scrollTo({ top: 0, behavior: 'instant' }), true`);
+  check(await p.waitFor(`document.querySelector('${TILE} .events-at').textContent === '2–4/4'`), `show 5: a swipe up inside the tile brings the next event (${await text(p, `${TILE} .events-at`)})`);
   // A tap on the tile opens the panel: a card with the period, how many, every event, and Open calendar.
   await p.tapSel(TILE);
   check(await p.waitFor(panelOpen), 'show 5: a tap on the tile opens the panel');
@@ -144,6 +140,20 @@ export async function eventsShow() {
   await load(p, 'device=Echo+Show+5+Bedroom&theme=xp');
   check(await p.eval(`(() => { const n = document.querySelector('${TILE} .tile-name'), t = document.querySelector('${TILE}').getBoundingClientRect(), r = n.getBoundingClientRect(); return n.textContent === 'Today' && r.width > 0 && r.top - t.top < 30; })()`), 'show 5, xp: the period in the tile\'s title bar');
   await p.close();
+
+  // With eight lights the grid scrolls: a swipe inside the tile scrolls the events, not the grid; elsewhere it scrolls the grid.
+  const BEDROOM = ['light.bedroom_ceiling', 'light.bedroom_strips', 'light.bedroom_nightstand_1', 'light.bedroom_nightstand_2'];
+  const eight = await withEvents(960, 480, { calendars: ['calendar.family', 'calendar.work'] }, [...BEDROOM, 'light.living_room', 'light.dining_room', 'light.kitchen', 'light.tv_strip'].map((entity) => ({ entity, name: entity.split('.')[1] })));
+  await load(eight, 'device=Echo+Show+5+Bedroom');
+  await eight.waitFor(`document.querySelectorAll('${TILE} .event').length === 4`);
+  const [many, firstLight] = [await eight.rect(TILE), await eight.rect('.view.active .lights > .tile:nth-child(2)')];
+  check(await eight.eval(`(() => { const g = document.querySelector('.view.active .lights'); return g.scrollHeight > g.clientHeight + 20; })()`), 'show 5, eight lights: more than the screen holds');
+  await eight.drag(many.x, many.y + 10, many.x, many.y - 20, 10); await sleep(700);
+  check(await eight.waitFor(`document.querySelector('${TILE} .events-at').textContent === '2–4/4'`) && await eight.eval(`document.querySelector('.view.active .lights').scrollTop === 0`),
+    `show 5, eight lights: a swipe up inside the tile brings the next event, the grid stays (${await text(eight, `${TILE} .events-at`)})`);
+  await eight.drag(firstLight.l + 30, firstLight.y, firstLight.l + 30, firstLight.y - 60, 10); await sleep(700);   // from its icon: its pill is a slider
+  check(await eight.eval(`document.querySelector('.view.active .lights').scrollTop > 0`), 'show 5, eight lights: a swipe on the light tiles scrolls the grid');
+  await eight.close();
 
   // The next 7 days on the Show 8: four lines of five at most, no count, no link; the panel under the days.
   const w = await withEvents(1280, 800, { calendars: ['calendar.family', { entity: 'calendar.work', color: '#5aa9e6' }], period: 'week', max: 5, lines: { wide: 4 }, chip: false });

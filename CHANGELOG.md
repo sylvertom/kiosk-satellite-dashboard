@@ -7,6 +7,15 @@ zip of the files to copy to Home Assistant ([Updating](docs/setup.md#updating)).
 
 ## Unreleased
 
+### Changed
+
+- **The Echo Show makes more of its screen**: a smaller dial, and the light tiles as
+  rows, each light's icon beside its name and its slider, in as many columns as fit, in
+  the middle of the height beside the dial. An Echo Show 8 shows three lights in full
+  under the room's events, an Echo Show 5 four, with nothing to scroll; more lights than
+  rows have room for are cards in two columns. The events' tile is as tall as its events:
+  one event is one line, its title in full.
+
 ## 1.3.0 - 2026-10-26
 
 ### Added

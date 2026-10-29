@@ -10,7 +10,7 @@
 import { reset, finish } from './checks/harness.mjs';
 import { bedroomSpot, livingSpot } from './checks/spot.mjs';
 import { insideKioskSatellite } from './checks/kiosk-satellite.mjs';
-import { bedroomShow5, livingShow8 } from './checks/show.mjs';
+import { bedroomShow5, livingShow8, tilesShow8 } from './checks/show.mjs';
 import { lightsOff, mainWithoutMembers, sevenRooms } from './checks/rooms.mjs';
 import { noPlayer, ringSizes } from './checks/menus.mjs';
 import { signIn, noConfig } from './checks/sign-in.mjs';
@@ -25,6 +25,8 @@ await livingSpot();
 await insideKioskSatellite();
 await bedroomShow5();
 await livingShow8();
+await reset();
+await tilesShow8();
 await reset();
 await lightsOff();
 await reset();

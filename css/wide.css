@@ -1,28 +1,48 @@
 /* Wide screens: Echo Show 5 / 8, tablets, desktop. */
 
 /* The header on top; under it the controls column (main slider, media card)
-   beside the light tiles. Both fill the height that is left. */
+   beside the light tiles. Both fill the height that is left. The dial's
+   column is narrow, to leave the lights their room; it widens while the
+   media card shows (.with-media, set by js/view.js), whose buttons need it. */
 .shape-wide .view {
-  display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas: "top top" "controls lights"; column-gap: 1.2rem; row-gap: 1.1rem;
-  padding: 1.1rem 1.4rem 1.3rem;
+  --controls: 15rem;
+  display: grid; grid-template-columns: minmax(0, var(--controls)) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "top top" "controls lights"; column-gap: 1.2rem; row-gap: 1rem;
+  padding: 1.1rem 1.4rem 1.2rem;
 }
+.shape-wide .view.with-media { --controls: 22rem; }
 .shape-wide .top { grid-area: top; }
 .shape-wide .controls { grid-area: controls; display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; }
 /* the dial takes what the media card leaves */
 .shape-wide .main { flex: 1 1 0; min-height: 4.2rem; display: grid; grid-template-rows: minmax(0, 1fr); }   /* the column's height, not its content's */
-.shape-wide .controls.with-media .main { flex: none; }
+.shape-wide .with-media .main { flex: none; }
 /* the rail on the right: a column of its own under the header */
-.shape-wide .app.with-rail .view { grid-template-columns: minmax(0, 22rem) minmax(0, 1fr) calc(var(--rail-item) + 0.4rem); grid-template-areas: "top top top" "controls lights ."; }
-/* tiles grow with the room there is, up to a point; past that the grid scrolls */
+.shape-wide .app.with-rail .view { grid-template-columns: minmax(0, var(--controls)) minmax(0, 1fr) calc(var(--rail-item) + 0.4rem); grid-template-areas: "top top top" "controls lights ."; }
+/* The tiles in --cols columns (js/view.js): as rows (.rows), each light's
+   icon beside its name and its pill, or, where rows would stack four
+   lights or more in one column, as cards, the icon above. Each as tall as
+   it needs, the lot in the middle of the height beside the dial; past the
+   height there is, the grid scrolls. A light alone on the last row (.lone)
+   runs across it. */
 .shape-wide .lights {
-  grid-area: lights; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(8.6rem, 13rem);
+  grid-area: lights; align-self: center; max-height: calc(100% + 0.3rem); grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); gap: 0.6rem;
   overflow-y: auto; touch-action: pan-y; scrollbar-width: none; padding: 0.15rem; margin: -0.15rem;
 }
 .shape-wide .lights::-webkit-scrollbar { display: none; }
-.shape-wide .lights[data-count="1"] { grid-template-columns: minmax(0, 1fr); }
-.shape-wide .lights[data-count="3"], .shape-wide .lights[data-count="5"], .shape-wide .lights[data-count="6"], .shape-wide .lights[data-count="9"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.shape-wide .lights[data-count="7"], .shape-wide .lights[data-count="8"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.shape-wide .lights.lone > .tile:last-child { grid-column: 1 / -1; }
+.shape-wide .tile { padding: 0.6rem 0.85rem; gap: 0.3rem; }
+.shape-wide .tile-slider { flex: none; height: 2.1rem; }
+/* a light as a row: its icon on the left, its name over its pill, the dots
+   on the right, in the middle of its height (kept to .rows, which only the
+   wide screens have, for a theme's tile to win) */
+.rows > .tile {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "icon text" "icon slider";
+  align-content: center; align-items: center; column-gap: 0.8rem; row-gap: 0.35rem; padding: 0.6rem 3.5rem 0.6rem 0.8rem;
+}
+.rows .tile-icon { grid-area: icon; }
+.rows .tile-text { grid-area: text; margin: 0; }
+.rows .tile-slider, .rows .tile > .tile-state { grid-area: slider; }
+.rows .tile-more { top: calc(50% - 1.1rem); right: 0.75rem; }
 /* a room with a single light: its dial alone, in the middle */
 .shape-wide .view.solo .controls { grid-column-end: -1; justify-self: center; width: 100%; max-width: 30rem; }
 /* short wide screens (Echo Show 5): a little tighter */
@@ -31,10 +51,11 @@
 .density-compact .modes .chip { height: 2.9rem; }
 .density-compact.shape-wide .view { padding: 0.9rem 1.2rem 1.1rem; row-gap: 0.9rem; }
 /* the room's events: a wide tile across the top of the grid, as tall as its
-   lines (the grid's first row fits it), the mark of where it is in its corner */
-.shape-wide .view.with-events .lights { grid-template-rows: max-content; }
-.shape-wide .events { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 0.9rem; padding: 0.75rem 0.95rem; font-size: 0.95rem; }
+   lines, the mark of where it is in its corner, kept clear of the lines
+   while it shows (.paged) */
+.shape-wide .events { --ev-row: 1.5rem; grid-column: 1 / -1; display: flex; flex-direction: row; align-items: center; gap: 0.9rem; padding: 0.65rem 0.95rem; font-size: 0.95rem; }
 .shape-wide .events .tile-icon { background: rgba(var(--accent-rgb), 0.22); color: var(--accent); }
 .shape-wide .events .tile-text { display: none; }   /* the period's name, for a theme's title bar */
-.shape-wide .events-rows { flex: 1; min-width: 0; padding-right: 3.6rem; }
-.shape-wide .events-at { top: 0.75rem; right: 0.95rem; }
+.shape-wide .events-rows { flex: 1; min-width: 0; }
+.shape-wide .events.paged .events-rows { padding-right: 3.6rem; }
+.shape-wide .events-at { top: 0.65rem; right: 0.95rem; }

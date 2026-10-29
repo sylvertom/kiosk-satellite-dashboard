@@ -100,8 +100,8 @@ node tools/mock-ha.mjs &
 node tools/shoot.mjs              # Google Chrome; elsewhere than macOS set CHROME=<path>
 ```
 
-It drives headless Chrome with touch events at 480×480, 960×480 and 1280×800 against the
-mock and prints `ok` or `FAIL` for each of its checks, over 500 of them. The example's
+It drives headless Chrome with touch events at 480×480, 960×480, 960×600 (an Echo Show 8
+as Kiosk Satellite lays it out) and 1280×800 against the mock and prints `ok` or `FAIL` for each of its checks, over 500 of them. The example's
 background pictures come from Unsplash: the suite fetches each once and hands it to the page, or a made-up
 one when there is no network. It saves its screenshots to `screenshots/`, which git
 ignores; `--docs` also refreshes the pictures in `docs/images/` (the README's and the
@@ -119,7 +119,8 @@ of `tools/checks/` for that part of the page, and keep the mock's entities in st
 `config.example.js`, which is the suite's configuration too.
 
 What it covers: taps, drags across the dial and along its arc (and the Spot's rim), the
-toggles in its middle, the tiles' own sliders, the panel's sliders, long-presses, the
+toggles in its middle, the tiles' own sliders, the tiles as rows or as cards in as many
+columns as fit (three, four and eight lights on the Echo Show 5 and 8), the panel's sliders, long-presses, the
 projector scripts and media card, WLED effects, palette and speed, group members, the
 Spot's menu ring (tap and swipe on its tab, picking an item, closed by a tap beside its
 items, rings of one to ten buttons sized to fit), the Show's rail, items kept to one

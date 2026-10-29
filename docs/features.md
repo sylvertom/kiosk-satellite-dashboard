@@ -14,10 +14,14 @@ What the page does, screen by screen. [Configuration](configuration.md) says how
   for things like a projector; when the header has no room for their names, they show
   their icons alone) and a large 24 hour clock. Under it, the dial for
   the room's lights: drag along its arc or across it to dim, tap the name in its middle to
-  toggle, long-press for the panel. Beside it the light tiles: tap toggles, the pill at
-  the bottom is that light's own slider, long-press or the dots open the panel. Both grow
-  to fill the screen; with the media card on, the dial shrinks to a small ring beside the
-  name.
+  toggle, long-press for the panel. Beside it the light tiles: tap toggles, the pill
+  under the name is that light's own slider, long-press or the dots open the panel. Each
+  tile is a row, its icon beside its name and pill, in as many columns as the screen
+  has room for; where that would stack four lights or more in one column (an Echo Show
+  8 has room for one), they are cards in two columns, the icon above the name. They
+  sit in the middle of the height beside the dial, and scroll when there are more than
+  fit. With the media card on, the dial shrinks to a small ring beside the name and its
+  column widens.
 - **Spot.** The dial is a thick rim along the edge of the round screen. From the top: the
   room title, the sensors and the modes as round icons; a large power button for the
   room's lights beside their name and state, faint arrows either side; under it a strip

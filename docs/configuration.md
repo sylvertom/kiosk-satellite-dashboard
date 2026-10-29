@@ -174,12 +174,13 @@ Only `calendars` is needed; the rest is shown with its default.
   while an alert has the Spot's row. `chip: false` leaves it out.
 - **The list.** On the Spot a line just above the main light, on the Show a wide tile
   first among the lights. It shows `lines` events (one at most on the Spot, six on the
-  Show; one number sets both), and a swipe up or down moves through the others, `max` in
-  all; a mark in its corner says which are in view (*2/4*). Each event has its time
-  (*Now* while it is on, *All day*, its day of the week this week, its date further on)
-  and its title, and when the room has more than one calendar, a dot in its calendar's
-  colour: `color`, any CSS colour, or one the page picks. On the Show 5, a room with four
-  light tiles has its grid scroll for the last ones.
+  Show; one number sets both), fewer while there are fewer, and a swipe up or down moves
+  through the others, `max` in all; a mark in its corner says which are in view (*2/4*).
+  Each event has its time (*Now* while it is on, *All day*, its day of the week this
+  week, its date further on) and its title, and when the room has more than one
+  calendar, a dot in its calendar's colour: `color`, any CSS colour, or one the page
+  picks. Three lines leave room for four lights on an Echo Show 5, three on an Echo Show
+  8; with more, the lights scroll.
 - **The panel.** A tap on the chip or on the list shows every event of the period, under
   the day it is on when the period is longer than a day, with its hours and where. With a
   `link`, an *Open calendar* button under them follows it: `ks://calendar` opens Kiosk

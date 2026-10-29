@@ -1,5 +1,6 @@
-// Checks on the Echo Show 5 (960×480) in the bedroom and the Echo Show 8 (1280×800) in the living room.
-import { sleep, check, openPage, mockStates, mockSet, lastCall, callLog, failCalls, ROOT_ITEMS, RADIOS, PLAYLISTS, text, has, activeRoom, lightsOn, onScreen, tapTab, load } from './harness.mjs';
+// Checks on the Echo Show 5 (960×480) in the bedroom, the Echo Show 8 (1280×800) in the living room, and the light
+// tiles on an Echo Show 8 as Kiosk Satellite lays it out (960×600).
+import { sleep, check, openPage, mockStates, mockSet, lastCall, callLog, failCalls, ROOT_ITEMS, RADIOS, PLAYLISTS, text, has, activeRoom, lightsOn, onScreen, tapTab, load, setClock, changeRoom, addEvent } from './harness.mjs';
 
 // 4. Bedroom Show (Echo Show 5, 960×480): rail on the right; light theme.
 export async function bedroomShow5() {
@@ -31,10 +32,12 @@ export async function bedroomShow5() {
   check((await box('.tile:nth-child(3)')).r <= railBox.l - 10 && (await box('.events')).r <= railBox.l - 10, 'the tiles and the events keep clear of the rail');
   check(top.h > 50, `header: the top bar is tall (${top.h.toFixed(0)}px)`);
   check(!(await has(p, '.nav-btn')) && !(await has(p, '.chip.preset')), 'no navigation buttons and no presets');
-  // Under the header, the main slider card and the lights share the rest of the screen: first among the lights, the
-  // room's events (the light tiles 2 to 5 in the grid), which scrolls for the last ones.
+  // Under the header, the dial and the lights share the rest of the screen: the lights in the middle of the height
+  // beside the dial, first the room's events (the light tiles 2 to 5 in the grid), all four lights in view.
   let bar = await box('.main .bar.group'), evs = await box('.lights > .events'), tile1 = await box('.lights > .tile:nth-child(2)'), grid = await box('.lights');
-  check(bar.t >= top.b && Math.abs(bar.t - evs.t) < 3 && tile1.t > evs.b && bar.b > 440 && grid.b > 440 && grid.b <= 480 && bar.b <= 480, `the main card and the lights fill the height, the events first (card ${bar.h.toFixed(0)}px, events ${evs.h.toFixed(0)}px, tile ${tile1.h.toFixed(0)}px)`);
+  check(bar.t >= top.b && grid.t >= top.b && evs.t - grid.t < 5 && tile1.t > evs.b && grid.b <= 480 && bar.b <= 480 && Math.abs((grid.t + grid.b) / 2 - (bar.t + bar.b) / 2) < 6
+    && await p.eval(`(() => { const g = document.querySelector('.view.active .lights'); return g.scrollHeight <= g.clientHeight + 1; })()`),
+  `the dial and the lights side by side, the lights in the middle of the height, the events first, all in view (dial ${bar.h.toFixed(0)}px, events ${evs.h.toFixed(0)}px, tile ${tile1.h.toFixed(0)}px)`);
   check(await p.eval(`getComputedStyle(document.querySelector('.view.active .main .bar.group')).backgroundColor === 'rgba(0, 0, 0, 0)' && !document.querySelector('.view.active .main .bar.group .power')`), 'the main control is the dial alone, no card behind it');
   await p.dragTo('.view.active .main .bar.group', 0.45, 0.3);
   st = await mockStates();
@@ -174,12 +177,13 @@ export async function livingShow8() {
   await load(p, 'device=Echo+Show+8+Living+Room');
   check(await p.eval(`document.querySelector('.view.active .media').hidden`), 'media card hidden while the projector is off');
   check(await p.eval(`(() => { const v = document.querySelector('.view.active'); const r = (s) => v.querySelector(s).getBoundingClientRect(); return !v.querySelector('.modes').classList.contains('icons') && r('.modes .chip:first-child').left >= r('.title').right && r('.modes .chip:first-child').left >= r('.sensors .sensor:last-child').right && r('.modes .chip:last-child').right <= r('.clock').left && [...v.querySelectorAll('.modes .chip .name')].every((n) => n.scrollWidth <= n.clientWidth); })()`), 'show 8: title, sensors, three modes and the clock fit in the top bar');
-  check(await p.eval(`(() => { const v = document.querySelector('.view.active'); const b = v.querySelector('.main .bar.group').getBoundingClientRect(), t = [...v.querySelectorAll('.tile')].pop().getBoundingClientRect(), m = document.querySelector('#menu .menu-panel').getBoundingClientRect(); return m.right > 1240 && t.right <= m.left - 10 && t.bottom > 740 && b.height > 300; })()`), 'show 8: the dial and the tiles fill the view, clear of the rail on the right');
+  check(await p.eval(`(() => { const v = document.querySelector('.view.active'); const b = v.querySelector('.main .bar.group').getBoundingClientRect(), t = [...v.querySelectorAll('.tile')].pop().getBoundingClientRect(), m = document.querySelector('#menu .menu-panel').getBoundingClientRect(), g = v.querySelector('.lights'); return m.right > 1240 && t.right <= m.left - 10 && t.bottom <= 790 && b.height > 300 && g.scrollHeight <= g.clientHeight + 1; })()`), 'show 8: the dial and all five tiles in view, clear of the rail on the right');
   await p.shot('show8-living.png');
   await p.tapSel('.view.active .chip:nth-child(1)');
   check(await p.waitFor(`!document.querySelector('.view.active .media').hidden`), 'media card appears when the projector is on');
   await sleep(400);
-  check(await p.eval(`document.querySelector('.view.active .controls').classList.contains('with-media') && document.querySelector('.view.active .main .bar.group').getBoundingClientRect().height < 200`), 'the main card shrinks to a row beside the media card');
+  check(await p.eval(`document.querySelector('.view.active').classList.contains('with-media') && document.querySelector('.view.active .main .bar.group').getBoundingClientRect().height < 200`), 'the main card shrinks to a row beside the media card');
+  check(await p.eval(`(() => { const v = document.querySelector('.view.active'), c = v.querySelector('.controls').getBoundingClientRect(), t = v.querySelector('.media-transport'); return c.width > 20 * 24 && t.scrollWidth <= t.clientWidth; })()`), 'the controls widen for the media card, its buttons in view');
   check((await text(p, '.view.active .media-title')) === 'Severance', 'media card shows the title');
   check(await p.eval(`document.querySelectorAll('.view.active .media-sources .chip').length`) === 5, 'media card lists the sources');
   await p.shot('show8-living-media.png');
@@ -241,4 +245,61 @@ export async function livingShow8() {
   await sleep(300);
   await p.shot('show8-office.png');
   await p.close();
+}
+
+// 5b. The light tiles on an Echo Show 8 as Kiosk Satellite lays it out (960×600, 1rem = 20.4px): its width holds the dial
+//     and one column of lights. Three lights are rows, each its icon beside its name and its pill, all in view under three
+//     lines of events, their names in full; four are cards in two columns; on the Show 5 three are two rows, the third
+//     across. The events' tile is as tall as its events.
+export async function tilesShow8() {
+  const BEDROOM = ['light.bedroom_ceiling', 'light.bedroom_strips', 'light.bedroom_nightstand_1', 'light.bedroom_nightstand_2'];
+  const lights = (n) => BEDROOM.slice(0, n).map((entity, j) => ({ entity, name: ['Living room', 'Dining room', 'Bathroom', 'Bedside right'][j], icon: 'lamp' }));
+  const tiles = (p) => p.eval(`(() => { const g = document.querySelector('.view.active .lights'), rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const ts = [...g.querySelectorAll('.tile:not(.events)')].map((t) => { const r = t.getBoundingClientRect(), i = t.querySelector('.tile-icon').getBoundingClientRect(), n = t.querySelector('.tile-name'), s = t.querySelector('.tile-slider').getBoundingClientRect();
+      return { l: r.left, r: r.right, t: r.top, b: r.bottom, w: r.width, beside: i.right < n.getBoundingClientRect().left && i.right < s.left, full: n.scrollWidth <= n.clientWidth }; });
+    return { rows: g.classList.contains('rows'), cols: +g.style.getPropertyValue('--cols'), fits: g.scrollHeight <= g.clientHeight + 1, ts, grid: g.getBoundingClientRect().width, rem,
+      dial: document.querySelector('.view.active .main .bar.group').getBoundingClientRect().width }; })()`);
+  const p = await openPage(960, 600);
+  await setClock(p, 10);
+  await changeRoom(p, 'bedroom', { lights: lights(3), events: { calendars: ['calendar.family'], period: 'week' } });
+  await load(p, 'room=bedroom');
+  await p.waitFor(`document.querySelectorAll('.view.active .events .event').length === 5`);
+  let t = await tiles(p);
+  check(t.rem > 20 && t.dial <= 15.2 * t.rem && t.grid > 22 * t.rem, `show 8 at 960×600: the dial a third of the width, the lights the rest (dial ${(t.dial / t.rem).toFixed(1)}rem, lights ${(t.grid / t.rem).toFixed(1)}rem)`);
+  check(t.rows && t.cols === 1 && t.ts.every((x) => x.beside && x.full && Math.abs(x.w - t.ts[0].w) < 1) && t.fits && await p.eval(`document.querySelector('.view.active .events-rows').childElementCount > 3`),
+    `show 8: three lights as rows in one column, each its icon beside its name and pill, the names in full, all in view under three lines of events (${JSON.stringify(t.ts.map((x) => [x.beside, x.full]))}, fits: ${t.fits})`);
+  await p.shot('show8-960-rows.png');
+  await p.close();
+
+  // One event left today: the tile one line tall, no mark, its line the tile's whole width.
+  const one = await openPage(960, 600);
+  await setClock(one, 19, 30);
+  await addEvent({ entity: 'calendar.family', summary: 'Pathé La Joliette: Psychose', day: 0, h: 22, m: 30, minutes: 120 });
+  await changeRoom(one, 'bedroom', { lights: lights(3), events: { calendars: ['calendar.family'], period: 'day' } });
+  await load(one, 'room=bedroom');
+  await one.waitFor(`document.querySelectorAll('.view.active .events .event').length === 2`);
+  check(await one.eval(`(() => { const e = document.querySelector('.view.active .events'), rows = e.querySelector('.events-rows'), row = rows.firstElementChild, title = rows.lastElementChild.querySelector('.ev-title');
+    return Math.abs(rows.getBoundingClientRect().height - 2 * row.getBoundingClientRect().height) < 1 && e.querySelector('.events-at').hidden && !e.classList.contains('paged') && title.scrollWidth <= title.clientWidth; })()`),
+  'show 8: two events, two lines, no mark, a long title in full');
+  await one.shot('show8-960-events.png');
+  await one.close();
+
+  // Four lights: two columns of cards, all in view.
+  const four = await openPage(960, 600);
+  await setClock(four, 10);
+  await changeRoom(four, 'bedroom', { lights: lights(4), events: { calendars: ['calendar.family'], period: 'day', lines: 1 } });
+  await load(four, 'room=bedroom');
+  t = await tiles(four);
+  check(!t.rows && t.cols === 2 && t.ts.every((x) => !x.beside && x.full) && t.fits, `show 8: four lights as cards in two columns, the icon above the name, all in view (rows: ${t.rows}, ${t.cols} columns, fits: ${t.fits})`);
+  await four.shot('show8-960-cards.png');
+  await four.close();
+
+  // The Show 5 has room for two rows side by side: three lights are two and one, the last across.
+  const five = await openPage(960, 480);
+  await changeRoom(five, 'bedroom', { lights: lights(3) });
+  await load(five, 'room=bedroom');
+  t = await tiles(five);
+  check(t.rows && t.cols === 2 && Math.abs(t.ts[0].t - t.ts[1].t) < 1 && t.ts[2].t > t.ts[0].b && Math.abs(t.ts[2].l - t.ts[0].l) < 1 && Math.abs(t.ts[2].r - t.ts[1].r) < 1 && t.ts.every((x) => x.beside && x.full),
+    'show 5: three lights as two rows side by side, the third across under them');
+  await five.close();
 }

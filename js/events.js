@@ -192,17 +192,17 @@
     return node;
   }
 
-  // The list: `lines` events in view, a swipe up or down scrolls through
-  // the rest a line at a time, a mark in the corner says where (1/3, or
-  // 1–3/5). On the Show a wide tile with the calendar's icon (and the
-  // period's name, which only a theme with title bars shows); on the Spot a
-  // line of its own. A tap opens them all.
+  // The list: `lines` events in view (as many lines as there are events,
+  // when fewer), a swipe up or down scrolls through the rest a line at a
+  // time, a mark in the corner says where (1/3, or 1–3/5). On the Show a
+  // wide tile with the calendar's icon (and the period's name, which only a
+  // theme with title bars shows); on the Spot a line of its own. A tap
+  // opens them all.
   function makeEventsList(cfg) {
     const s = sourceOf(cfg), wide = K.shape !== 'round';
     const node = el('div', 'events' + (wide ? ' tile' : ''));
     node.innerHTML = (wide ? `<span class="tile-icon">${icon('calendar-blank-outline')}</span><span class="tile-text"><span class="tile-name">${esc(PERIODS[cfg.period].title)}</span></span>` : '')
       + '<div class="events-rows"></div><span class="events-at"></span>';
-    setVar(node, '--lines', cfg.lines);
     const rows = node.querySelector('.events-rows'), at = node.querySelector('.events-at');
     // a click, not the finger's release: the panel opens over the list, and must not take the click that follows
     // (a swipe that scrolls makes none)
@@ -214,6 +214,7 @@
       const first = h ? clamp(Math.round(rows.scrollTop / h), 0, Math.max(0, count - cfg.lines)) + 1 : 1;
       const last = Math.min(first + cfg.lines - 1, count);
       at.hidden = count <= cfg.lines;
+      setClass(node, 'paged', !at.hidden);
       setText(at, last > first ? `${first}–${last}/${count}` : `${first}/${count}`);
     };
     s.draws.add(() => {
@@ -222,6 +223,7 @@
       const h = (list ? !items.length : s.failed) ? `<div class="event none">${esc(note(s))}</div>`
         : items.map((e) => `<div class="event${e.start <= now && !e.allDay ? ' now' : ''}">${dotOf(cfg, e)}<span class="ev-time">${esc(whenShort(e, now))}</span><span class="ev-title">${esc(e.title)}</span></div>`).join('');
       count = items.length;
+      setVar(node, '--lines', clamp(count, 1, cfg.lines));
       if (h !== html) { html = h; rows.innerHTML = h; }
       mark();
     });
