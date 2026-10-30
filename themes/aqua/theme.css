@@ -72,7 +72,8 @@ html[data-theme="aqua"] .dial.rim .dial-knob .knob { transform: scale(1.8); }
 
 /* ------------------------------------------------ a light: a window */
 html[data-theme="aqua"].shape-wide .tile {
-  padding-top: 2.5rem; border: 1px solid #8f8f8f; border-radius: 0.55rem 0.55rem 0.3rem 0.3rem; box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.25);
+  padding-top: 2.5rem; padding-right: 0.95rem;   /* its button is in the title bar: the pill takes the width */
+  border: 1px solid #8f8f8f; border-radius: 0.55rem 0.55rem 0.3rem 0.3rem; box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.25);
   background:
     linear-gradient(#9a9a9a, #9a9a9a) 0 1.9rem / 100% 1px no-repeat,
     linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(0, 0, 0, 0.06)) 0 0 / 100% 1.9rem no-repeat,

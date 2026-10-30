@@ -222,6 +222,9 @@ const setClock = (page, h, m = 0) => page.s('Page.addScriptToEvaluateOnNewDocume
   const D = Date, shift = new D(2026, 9, 21, ${h}, ${m}).getTime() - D.now();
   class Clock extends D { constructor(...a) { if (a.length) super(...a); else super(D.now() + shift); } static now() { return D.now() + shift; } }
   window.Date = Clock; })();` });
+// From the page's next load on, config.js with these changes to one of its rooms ({ lights: [...], events: {...} }).
+const changeRoom = (page, room, changes) => page.s('Page.addScriptToEvaluateOnNewDocument', { source: `(() => { let v; Object.defineProperty(window, 'KIOSK_CONFIG', { configurable: true, get: () => v, set: (c) => {
+  Object.assign(c.rooms[${JSON.stringify(room)}], ${JSON.stringify(changes)}); v = c; } }); })();` });
 const addEvent = (e) => fetch(BASE + '/__calendar', { method: 'POST', body: JSON.stringify(e) });   // {entity, summary, day, h, m, minutes}
 const noEvents = (none) => fetch(BASE + '/__calendar', { method: 'POST', body: JSON.stringify({ none }) });   // the calendars empty, or back
 
@@ -244,5 +247,5 @@ async function finish() {
 
 export {
   check, openPage, failPictures, pictureReferers, ROOT_ITEMS, has, menuOpen, load, sleep, text, insideRim, mockStates, mockReaches, activeRoom, mockSet, lastCall, RADIOS, PLAYLISTS, lightsOn, onScreen, tapTab, BASE, connected, callLog, setLibrary, RING_FITS, SWITCH_GAP, POP_PARTS, reset, finish,
-  failCalls, slowFile, tokenLife, dropConnections, authLog, setClock, addEvent, noEvents,
+  failCalls, slowFile, tokenLife, dropConnections, authLog, setClock, changeRoom, addEvent, noEvents,
 };

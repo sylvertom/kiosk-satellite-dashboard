@@ -69,6 +69,7 @@ html[data-theme="starship"].shape-wide .tile {
   background: #000000; border: 0; border-top: 0.55rem solid var(--lc); border-left: 1.4rem solid var(--lc);
   border-radius: 1.8rem 0 0 0.4rem; padding: 0.7rem 0.4rem 0.6rem 0.8rem;
 }
+html[data-theme="starship"].shape-wide .rows > .tile { padding-right: 3.5rem; }   /* the dots beside the pill */
 html[data-theme="starship"].shape-wide .tile::before { display: none; }
 html[data-theme="starship"].shape-wide .tile:not(.on) { --lc: #3a3a4a; }
 html[data-theme="starship"] .tile-name { color: var(--lc-peach); font-weight: 700; }
