@@ -9,7 +9,7 @@ optional: without it, the menu just has no favourites.
 Two ways to the same page:
 
 - **Through HACS**, the *Kiosk dashboard* integration serves the page at
-  `/kiosk_dashboard/index.html`, and HACS offers each new release as an update.
+  `/local/kiosk_dashboard/index.html`, and HACS offers each new release as an update.
 - **By hand**, the page sits in `/config/www/kiosk/`, which Home Assistant serves at
   `/local/kiosk/index.html`, and you copy each release yourself.
 
@@ -26,8 +26,8 @@ you can move from one to the other and keep them.
    asks.
 3. In **Settings > Devices & services**, **Add integration** and pick *Kiosk dashboard*.
 
-The page is now at `http://<ha>:8123/kiosk_dashboard/index.html`. The integration adds
-nothing else to Home Assistant: no entity, no service.
+The page is now at `http://<ha>:8123/local/kiosk_dashboard/index.html`. The integration
+adds nothing else to Home Assistant: no entity, no service.
 
 ### By hand
 
@@ -47,9 +47,9 @@ Assistant and add the integration as above.
 Copy `config.example.js` to `/config/www/kiosk/config.js` and make it yours. By hand, the
 example is already in that folder; through HACS, it is in
 `/config/custom_components/kiosk_dashboard/www/`, and at
-`http://<ha>:8123/kiosk_dashboard/config.example.js` in a browser. The example describes
-a made-up house with three rooms; everything marked `// <-- entity` is an entity to
-replace with one of yours.
+`http://<ha>:8123/local/kiosk_dashboard/config.example.js` in a browser. The example
+describes a made-up house with three rooms; everything marked `// <-- entity` is an
+entity to replace with one of yours.
 
 - Under `devices`, list your kiosks' names (the name under **Settings > Device** in
   Kiosk Satellite), each with the room it starts on.
@@ -62,8 +62,8 @@ part of the repository, so an update never overwrites it. Pictures of yours go i
 `/config/www/` too, at their `/local/` address (restart Home Assistant once if `www/` is
 new).
 
-Check the result on your computer first (through HACS, `/kiosk_dashboard/` in place of
-`/local/kiosk/`):
+Check the result on your computer first (through HACS, `/local/kiosk_dashboard/` in place
+of `/local/kiosk/`):
 
 ```
 http://<ha>:8123/local/kiosk/index.html?device=Echo+Spot+Bedroom
@@ -82,8 +82,9 @@ Add the page to Kiosk Satellite as a
 remote administration page:
 
 1. Open **Settings > Home Assistant > Custom Pages** and tap **Add page**.
-2. Give it a name (*Kiosk*) and the path, `/kiosk_dashboard/index.html` through HACS or
-   `/local/kiosk/index.html` by hand, then tap **Save & Validate**.
+2. Give it a name (*Kiosk*) and the path, `/local/kiosk_dashboard/index.html` through HACS
+   or `/local/kiosk/index.html` by hand, then tap **Save & Validate**. Kiosk Satellite
+   takes a page of Home Assistant's only under `/local/`.
 3. Pick it as the **Default dashboard**: it is listed under *Custom Pages* in every
    dashboard picker, and in the kiosk's ESPHome dashboard selects in Home Assistant.
 
@@ -115,6 +116,6 @@ The new `index.html` comes with new `?v=` versions, so the kiosks fetch the new 
 Settings > Version on a kiosk says which release it runs.
 
 **From by hand to HACS:** install the integration, give Kiosk Satellite's custom page the
-path `/kiosk_dashboard/index.html`, then delete what the release's zip put in
+path `/local/kiosk_dashboard/index.html`, then delete what the release's zip put in
 `/config/www/kiosk/`: `index.html`, `config.example.js`, `css/`, `js/`, and `themes/` but
 for a `themes/xp/bliss.jpg` of yours. Keep your `config.js` and your pictures.

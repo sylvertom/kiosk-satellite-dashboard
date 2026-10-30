@@ -51,7 +51,7 @@ shows them all.
    - **HACS**: add this repository as a custom repository, of type *Integration* (from
      Home Assistant 2026.11, **Settings > Marketplace > Add from link**), install *Kiosk
      dashboard for Kiosk Satellite*, then add the *Kiosk dashboard* integration. The page
-     is at `/kiosk_dashboard/index.html`.
+     is at `/local/kiosk_dashboard/index.html`.
    - **By hand**: unzip the latest
      [release](https://github.com/sylvertom/kiosk-satellite-dashboard/releases)'s
      `kiosk-satellite-dashboard-<version>.zip` in `/config/www/`: it holds the `kiosk/`
@@ -59,8 +59,9 @@ shows them all.
 2. Copy `config.example.js` to `/config/www/kiosk/config.js` and replace every entity
    marked `// <-- entity` with yours, and each picture marked `// <-- your picture` (or
    drop it).
-3. Check it in a browser: `http://<ha>:8123/kiosk_dashboard/index.html?device=Echo+Spot+Bedroom`
-   (by hand, `/local/kiosk/index.html`).
+3. Check it in a browser:
+   `http://<ha>:8123/local/kiosk_dashboard/index.html?device=Echo+Spot+Bedroom` (by hand,
+   `/local/kiosk/index.html`).
 4. Add the page to Kiosk Satellite as a custom page and pick it as the kiosk's default
    dashboard.
 

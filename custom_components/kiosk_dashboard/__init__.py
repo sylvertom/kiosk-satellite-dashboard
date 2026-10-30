@@ -1,9 +1,13 @@
-"""Kiosk dashboard: Home Assistant serves the kiosk page at /kiosk_dashboard/index.html.
+"""Kiosk dashboard: Home Assistant serves the kiosk page at /local/kiosk_dashboard/index.html.
 
 The page's files come with the integration, in its www/ folder (the release's zip puts
 them there), and an update replaces them all. What is yours stays in /config/www/kiosk/,
 where an install by hand keeps it too: config.js, and XP's wallpaper. The page finds them
 at the same addresses as if they were next to it.
+
+The address is under /local/ because Kiosk Satellite takes a custom page of Home
+Assistant's only there. The page's address, the longer one, answers before Home
+Assistant's /local/, the www folder, which has nothing at it.
 """
 
 from __future__ import annotations
@@ -18,7 +22,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError
 
 DOMAIN = "kiosk_dashboard"
-URL = f"/{DOMAIN}"
+URL = f"/local/{DOMAIN}"
 # Your files, in /config/www/kiosk/, by their address next to the page.
 OWN_FILES = ("config.js", "themes/xp/bliss.jpg")
 

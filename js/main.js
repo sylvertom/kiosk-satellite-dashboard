@@ -55,8 +55,8 @@
 
   async function main() {
     if (!window.KIOSK_CONFIG) {
-      // served by the integration (/kiosk_dashboard/), config.js is the one in /config/www/kiosk/
-      const where = location.pathname.startsWith('/kiosk_dashboard/') ? '/config/www/kiosk/config.js' : 'config.js';
+      // served by the integration (/local/kiosk_dashboard/), config.js is the one in /config/www/kiosk/
+      const where = location.pathname.startsWith('/local/kiosk_dashboard/') ? '/config/www/kiosk/config.js' : 'config.js';
       showStatus({ kind: 'error', text: `No config.js: copy config.example.js to ${where} and edit it`, icon: 'alert-circle-outline' });
       return;
     }
