@@ -7,6 +7,13 @@ zip of the files to copy to Home Assistant ([Updating](docs/setup.md#updating)).
 
 ## Unreleased
 
+### Fixed
+
+- **Through HACS, the page goes into Kiosk Satellite**: the integration serves it at
+  `/local/kiosk_dashboard/index.html`, since Kiosk Satellite takes a custom page of Home
+  Assistant's only under `/local/`; `/kiosk_dashboard/` is gone. Give the custom page that
+  path ([Make it the kiosk's start page](docs/setup.md#3-make-it-the-kiosks-start-page)).
+
 ## 1.5.0 - 2026-10-30
 
 ### Added

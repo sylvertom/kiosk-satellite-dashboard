@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // A stand-in for Home Assistant to try the page without an instance:
 // serves this folder (at /, /local/kiosk/ and, as the integration does,
-// /kiosk_dashboard/), answers the WebSocket API subset the page uses
+// /local/kiosk_dashboard/), answers the WebSocket API subset the page uses
 // (auth, subscribe_entities, call_service, config/entity_registry/get) and
 // fakes the login endpoints, Music Assistant's library (its favourites,
 // with covers) and two calendars' events. It signs in as Home Assistant does: a login's token runs out,
@@ -473,7 +473,7 @@ const server = http.createServer((req, res) => {
   if (url.pathname === '/mock/art.svg') { res.writeHead(200, { 'Content-Type': 'image/svg+xml' }); res.end(ART); return; }
   const coverOf = Object.values(library).flat().find((i) => i.image === url.pathname);
   if (coverOf && url.pathname !== '/mock/cover/missing.svg') { res.writeHead(200, { 'Content-Type': 'image/svg+xml' }); res.end(coverSvg(coverOf.name)); return; }
-  let file = url.pathname.replace(/^\/(local\/kiosk|kiosk_dashboard)/, '');
+  let file = url.pathname.replace(/^\/local\/(kiosk_dashboard|kiosk)/, '');
   if (file === '/' || file === '') file = '/index.html';
   const fp = file === '/config.js' ? CONFIG : path.join(ROOT, path.normalize(file));
   if ((fp !== CONFIG && !fp.startsWith(ROOT + path.sep)) || !fs.existsSync(fp) || fs.statSync(fp).isDirectory()) { res.writeHead(404); res.end('not found'); return; }

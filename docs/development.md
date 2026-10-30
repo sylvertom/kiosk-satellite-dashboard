@@ -3,8 +3,8 @@
 The page is plain HTML, CSS and JavaScript: no build step, no dependencies, no
 `package.json`. What is in the folder is what Home Assistant serves, from `/local/kiosk/`
 when it is copied there by hand. A small integration, which HACS installs, serves the same
-files at `/kiosk_dashboard/`: a release puts them in its `www/` folder. The tools need
-Node.js 22 or later, and Google Chrome for the checks; Python 3 only to add icons.
+files at `/local/kiosk_dashboard/`: a release puts them in its `www/` folder. The tools
+need Node.js 22 or later, and Google Chrome for the checks; Python 3 only to add icons.
 
 ## Files
 
@@ -43,7 +43,7 @@ Node.js 22 or later, and Google Chrome for the checks; Python 3 only to add icon
 | `tools/checks/*.mjs` | The checks, by part of the page: the Spot, the Show, Kiosk Satellite, the room menu, the menu, signing in, the themes, Settings, the alerts, the events, the music card |
 | `tools/fetch_icons.py` | Adds icons to `js/icons.js` |
 | `tools/release.mjs` | Prepares a release: every `?v=` and the changelog at its version ([Changes and releases](#changes-and-releases)) |
-| `custom_components/kiosk_dashboard/` | The integration HACS installs: it serves the page from its `www/`, which a release fills, at `/kiosk_dashboard/`, and your `config.js` from `/config/www/kiosk/` ([Security](security.md#through-the-integration)) |
+| `custom_components/kiosk_dashboard/` | The integration HACS installs: it serves the page from its `www/`, which a release fills, at `/local/kiosk_dashboard/`, and your `config.js` from `/config/www/kiosk/` ([Security](security.md#through-the-integration)) |
 | `hacs.json` | What HACS reads: the integration comes from the release's `kiosk_dashboard.zip` |
 | `.github/workflows/checks.yml` | The check suite on GitHub, for every push to `main` and every pull request |
 | `.github/workflows/validate.yml` | HACS's checks of the repository and Home Assistant's of the integration (hassfest), for every push to `main` and every pull request |
@@ -91,7 +91,7 @@ node tools/mock-ha.mjs            # serves the page at http://127.0.0.1:8123/
 
 Open `http://127.0.0.1:8123/index.html?device=Echo+Spot+Bedroom` in a browser (the mock
 also serves the page at `/local/kiosk/` and, as the integration does, at
-`/kiosk_dashboard/`), tap the
+`/local/kiosk_dashboard/`), tap the
 "sign in" pill (the mock accepts anything) and play with the lights. The mock keeps light
 groups in sync with their members, runs the projector scripts, answers the WLED and media
 player services, and stands in for Music Assistant's library (favourite radios and

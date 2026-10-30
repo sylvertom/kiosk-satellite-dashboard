@@ -6,7 +6,7 @@ A static Home Assistant dashboard for Echo devices running Kiosk Satellite. Read
 
 - **No build step, no dependencies**, in the page and in the tools. The page must work as
   Home Assistant serves it, from `/local/kiosk/` and from the integration's
-  `/kiosk_dashboard/`.
+  `/local/kiosk_dashboard/`.
 - **The integration** (`custom_components/kiosk_dashboard/`) is how HACS installs the page:
   it only serves it, from its `www/`, which a release fills. Home Assistant does not run
   in the checks: try a change to it on a real one.
