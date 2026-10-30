@@ -7,6 +7,8 @@ zip of the files to copy to Home Assistant ([Updating](docs/setup.md#updating)).
 
 ## Unreleased
 
+## 1.4.0 - 2026-10-30
+
 ### Added
 
 - **Music card**: on the Show, a room's `music` puts a card under the dial for the room's
