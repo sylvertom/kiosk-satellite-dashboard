@@ -1,0 +1,13 @@
+{
+  "domain": "kiosk_dashboard",
+  "name": "Kiosk dashboard",
+  "codeowners": ["@sylvertom"],
+  "config_flow": true,
+  "dependencies": ["http"],
+  "documentation": "https://github.com/sylvertom/kiosk-satellite-dashboard/blob/main/docs/setup.md",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/sylvertom/kiosk-satellite-dashboard/issues",
+  "single_config_entry": true,
+  "version": "1.4.0"
+}

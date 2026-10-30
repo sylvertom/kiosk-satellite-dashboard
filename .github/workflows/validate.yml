@@ -1,0 +1,29 @@
+# What HACS asks of a repository before it installs it, or lists it in its default
+# catalog: its own checks (hacs.json, the integration's place, the repository's
+# description, topics and license), and Home Assistant's of the integration (hassfest).
+# On every push to main and every pull request. The brand icons' check is left out: the
+# integration has none yet.
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: integration
+          ignore: brands
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: home-assistant/actions/hassfest@master

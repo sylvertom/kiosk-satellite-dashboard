@@ -1,7 +1,8 @@
 # Configuration
 
 Everything you set up lives in `config.js`, a copy of
-[`config.example.js`](../config.example.js) that sits next to `index.html`. It is plain
+[`config.example.js`](../config.example.js) in `/config/www/kiosk/`, next to `index.html`
+when you installed the page by hand ([Setup](setup.md)). It is plain
 JavaScript: one object, `window.KIOSK_CONFIG`. The example documents every option next to
 its use; this page is the reference.
 

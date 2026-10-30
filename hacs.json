@@ -1,0 +1,7 @@
+{
+  "name": "Kiosk dashboard for Kiosk Satellite",
+  "filename": "kiosk_dashboard.zip",
+  "hide_default_branch": true,
+  "homeassistant": "2024.7.0",
+  "zip_release": true
+}

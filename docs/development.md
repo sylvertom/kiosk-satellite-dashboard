@@ -1,7 +1,9 @@
 # Development
 
 The page is plain HTML, CSS and JavaScript: no build step, no dependencies, no
-`package.json`. What is in the folder is what Home Assistant serves. The tools need
+`package.json`. What is in the folder is what Home Assistant serves, from `/local/kiosk/`
+when it is copied there by hand. A small integration, which HACS installs, serves the same
+files at `/kiosk_dashboard/`: a release puts them in its `www/` folder. The tools need
 Node.js 22 or later, and Google Chrome for the checks; Python 3 only to add icons.
 
 ## Files
@@ -41,8 +43,11 @@ Node.js 22 or later, and Google Chrome for the checks; Python 3 only to add icon
 | `tools/checks/*.mjs` | The checks, by part of the page: the Spot, the Show, Kiosk Satellite, the room menu, the menu, signing in, the themes, Settings, the alerts, the events, the music card |
 | `tools/fetch_icons.py` | Adds icons to `js/icons.js` |
 | `tools/release.mjs` | Prepares a release: every `?v=` and the changelog at its version ([Changes and releases](#changes-and-releases)) |
+| `custom_components/kiosk_dashboard/` | The integration HACS installs: it serves the page from its `www/`, which a release fills, at `/kiosk_dashboard/`, and your `config.js` from `/config/www/kiosk/` ([Security](security.md#through-the-integration)) |
+| `hacs.json` | What HACS reads: the integration comes from the release's `kiosk_dashboard.zip` |
 | `.github/workflows/checks.yml` | The check suite on GitHub, for every push to `main` and every pull request |
-| `.github/workflows/release.yml` | A release's zip and draft on GitHub, for every version tag pushed |
+| `.github/workflows/validate.yml` | HACS's checks of the repository and Home Assistant's of the integration (hassfest), for every push to `main` and every pull request |
+| `.github/workflows/release.yml` | A release's zips and draft on GitHub, for every version tag pushed |
 | `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` | What an issue and a pull request ask for |
 
 ## How the code fits together
@@ -84,7 +89,9 @@ it.
 node tools/mock-ha.mjs            # serves the page at http://127.0.0.1:8123/
 ```
 
-Open `http://127.0.0.1:8123/index.html?device=Echo+Spot+Bedroom` in a browser, tap the
+Open `http://127.0.0.1:8123/index.html?device=Echo+Spot+Bedroom` in a browser (the mock
+also serves the page at `/local/kiosk/` and, as the integration does, at
+`/kiosk_dashboard/`), tap the
 "sign in" pill (the mock accepts anything) and play with the lights. The mock keeps light
 groups in sync with their members, runs the projector scripts, answers the WLED and media
 player services, and stands in for Music Assistant's library (favourite radios and
@@ -153,10 +160,15 @@ in the address being ignored, a login's token renewed before it runs out and whe
 Assistant refuses it, a refused kiosk token, and the rooms' events (the page's clock set
 to 10:00: what Home Assistant is asked, their order, the count, the Spot's line and the
 Show's tile and a swipe through them, the panel and Open calendar, an event added, none,
-a calendar that does not answer, each period, the list's lines and length), and the
+a calendar that does not answer, each period, the list's lines and length), the
 music card (the favourites and the switch, one played on the room's player, what plays
 with its volume and pause, the media card taking its place, none on the Spot or without
-a player).
+a player), and the page where the integration serves it (its files from there, what it
+says without `config.js`, the integration at the page's version).
+
+The suite does not run Home Assistant, so not the integration's Python either: try a
+change to it on a real Home Assistant, with the page copied into its `www/` as a
+release does.
 
 All of that runs in desktop Chrome, which has far more memory and speed than an Echo:
 try a change on a kiosk as well (Synthwave's first grid looked right here and starved
@@ -181,7 +193,7 @@ middle one. For 1.2.0:
 
 ```sh
 git switch -c release-1.2.0 main
-node tools/release.mjs 1.2.0          # every ?v= to 1.2.0; Unreleased becomes 1.2.0
+node tools/release.mjs 1.2.0          # every ?v= and the integration to 1.2.0; Unreleased becomes 1.2.0
 git commit -am "Release 1.2.0" && git push -u origin release-1.2.0
 # once its pull request is merged:
 git switch main && git pull && git tag v1.2.0 && git push origin v1.2.0
@@ -189,6 +201,8 @@ git switch main && git pull && git tag v1.2.0 && git push origin v1.2.0
 
 Every file asked for at a version it never had is what makes the kiosks fetch them again,
 and Settings shows that version. The tag starts `.github/workflows/release.yml`: it checks
-that the files and the changelog are at that version, zips the `kiosk/` folder to copy to
-`/config/www/` and drafts the GitHub release with the changelog's section as its notes.
-Read the draft on GitHub and publish it.
+that the files, the integration and the changelog are at that version, zips the `kiosk/`
+folder to copy to `/config/www/` and the integration with the page in its `www/`
+(`kiosk_dashboard.zip`, which HACS installs: the name `hacs.json` gives), and drafts the
+GitHub release with the changelog's section as its notes. Read the draft on GitHub and
+publish it: HACS offers a release once it is published.

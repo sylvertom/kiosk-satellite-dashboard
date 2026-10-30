@@ -1,6 +1,8 @@
 # Kiosk dashboard for Kiosk Satellite
 
 [![Checks](https://github.com/sylvertom/kiosk-satellite-dashboard/actions/workflows/checks.yml/badge.svg)](https://github.com/sylvertom/kiosk-satellite-dashboard/actions/workflows/checks.yml)
+[![Downloads](https://img.shields.io/github/downloads/sylvertom/kiosk-satellite-dashboard/total)](https://github.com/sylvertom/kiosk-satellite-dashboard/releases)
+[![HACS](https://img.shields.io/badge/HACS-custom%20repository-41BDF5)](docs/setup.md#through-hacs)
 
 A fast, touch-first Home Assistant dashboard for Echo devices running
 [Kiosk Satellite](https://github.com/jxlarrea/kiosk-satellite). One view per room with
@@ -45,19 +47,29 @@ shows them all.
 
 ## Quick start
 
-1. Unzip the latest [release](https://github.com/sylvertom/kiosk-satellite-dashboard/releases)
-   in `/config/www/` on your Home Assistant: it holds the `kiosk/` folder.
-2. Copy `config.example.js` to `config.js` and replace every entity marked
-   `// <-- entity` with yours, and each picture marked `// <-- your picture` (or drop it).
-3. Check it in a browser: `http://<ha>:8123/local/kiosk/index.html?device=Echo+Spot+Bedroom`.
-4. Add it to Kiosk Satellite as a custom page, `/local/kiosk/index.html`, and pick it as
-   the kiosk's default dashboard.
+1. Install it, through HACS or by hand:
+   - **HACS**: add this repository as a custom repository, of type *Integration* (from
+     Home Assistant 2026.11, **Settings > Marketplace > Add from link**), install *Kiosk
+     dashboard for Kiosk Satellite*, then add the *Kiosk dashboard* integration. The page
+     is at `/kiosk_dashboard/index.html`.
+   - **By hand**: unzip the latest
+     [release](https://github.com/sylvertom/kiosk-satellite-dashboard/releases)'s
+     `kiosk-satellite-dashboard-<version>.zip` in `/config/www/`: it holds the `kiosk/`
+     folder. The page is at `/local/kiosk/index.html`.
+2. Copy `config.example.js` to `/config/www/kiosk/config.js` and replace every entity
+   marked `// <-- entity` with yours, and each picture marked `// <-- your picture` (or
+   drop it).
+3. Check it in a browser: `http://<ha>:8123/kiosk_dashboard/index.html?device=Echo+Spot+Bedroom`
+   (by hand, `/local/kiosk/index.html`).
+4. Add the page to Kiosk Satellite as a custom page and pick it as the kiosk's default
+   dashboard.
 
 The [setup guide](docs/setup.md) goes through each step.
 
 ## Documentation
 
-- [Setup](docs/setup.md): installing, making it the start page, updating.
+- [Setup](docs/setup.md): installing through HACS or by hand, making it the start page,
+  updating.
 - [Configuration](docs/configuration.md): rooms, devices, menu, favourites, icons.
 - [Theme gallery](docs/theme-gallery.md): every theme on the Show and on the Spot.
 - [Themes](docs/themes.md): how a theme is made, and how to add one.

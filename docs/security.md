@@ -18,7 +18,8 @@ The page signs in with a session it finds in the browser:
 
 The page only ever talks to the Home Assistant that serves it, at its own address: no
 address is taken from a link or from a stored session, and no token is accepted from the
-address bar. That is why it has to be served by Home Assistant itself (`/local/`). The
+address bar. That is why it has to be served by Home Assistant itself (`/local/`, or
+`/kiosk_dashboard/` through the integration). The
 exceptions are plain images, web addresses only, loaded without passing on the page's
 address: the covers of your Music Assistant favourites, from wherever Music Assistant
 says they are (its own server or the streaming service), the artwork of a media card
@@ -30,3 +31,13 @@ the kiosk, only chooses among the themes listed in `themes/themes.js`, whose fil
 Synthwave's) runs inside the page like the page's own code.
 
 The sign-in code is in [`js/ha.js`](../js/ha.js), about 250 lines with no dependencies.
+
+## Through the integration
+
+Installed through HACS, the *Kiosk dashboard* integration has Home Assistant serve the
+same files at `/kiosk_dashboard/`, without a login as `/local/` does, and with them two
+files of yours from `/config/www/kiosk/`: `config.js` and XP's `themes/xp/bliss.jpg`,
+nothing else of that folder. That is all it does: it adds no entity, no service, and
+reads nothing from Home Assistant. Its code is in
+[`custom_components/kiosk_dashboard/__init__.py`](../custom_components/kiosk_dashboard/__init__.py),
+about 60 lines.

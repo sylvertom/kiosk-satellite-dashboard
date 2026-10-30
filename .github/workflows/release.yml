@@ -1,7 +1,9 @@
 # A release, when a version's tag (v1.2.0) is pushed (docs/development.md): checks that
-# index.html and CHANGELOG.md are at that version (node tools/release.mjs 1.2.0), zips
-# the kiosk/ folder to copy to Home Assistant's /config/www/ and drafts the GitHub
-# release with the changelog's section as its notes. Publish the draft on GitHub.
+# index.html, the integration and CHANGELOG.md are at that version (node tools/release.mjs
+# 1.2.0), zips the kiosk/ folder to copy to Home Assistant's /config/www/ and the
+# integration with the page in its www/ (kiosk_dashboard.zip, the name hacs.json gives
+# HACS), and drafts the GitHub release with the changelog's section as its notes. Publish
+# the draft on GitHub.
 name: Release
 
 on:
@@ -22,6 +24,7 @@ jobs:
           echo "VERSION=$version" >> "$GITHUB_ENV"
           found=$(grep -ho '?v=[0-9][0-9.]*' index.html themes/themes.js | sort -u)
           [ "$found" = "?v=$version" ] || { echo "index.html and themes/themes.js are not all at $version: node tools/release.mjs $version"; exit 1; }
+          grep -q "\"version\": \"$version\"" custom_components/kiosk_dashboard/manifest.json || { echo "the integration is not at $version: node tools/release.mjs $version"; exit 1; }
           # the section, each item on one line (a release page breaks lines where the file
           # does), its links to the docs made to point at this version's
           awk -v v="$version" '/^## /{on = ($2 == v)} on && !/^## /' CHANGELOG.md \
@@ -31,9 +34,14 @@ jobs:
       - name: Zip the files for Home Assistant
         run: |
           mkdir -p dist/kiosk
-          cp -R index.html config.example.js css js themes LICENSE dist/kiosk/
+          cp -R index.html config.example.js css js themes LICENSE NOTICE dist/kiosk/
           (cd dist && zip -qr "../kiosk-satellite-dashboard-$VERSION.zip" kiosk)
+          # the integration: what HACS unzips in custom_components/kiosk_dashboard/
+          mkdir -p dist/kiosk_dashboard/www
+          cp -R custom_components/kiosk_dashboard/. LICENSE NOTICE dist/kiosk_dashboard/
+          cp -R index.html config.example.js css js themes dist/kiosk_dashboard/www/
+          (cd dist/kiosk_dashboard && zip -qr ../../kiosk_dashboard.zip .)
       - name: Draft the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --draft --verify-tag --title "$VERSION" --notes-file notes.md "kiosk-satellite-dashboard-$VERSION.zip"
+        run: gh release create "$GITHUB_REF_NAME" --draft --verify-tag --title "$VERSION" --notes-file notes.md "kiosk-satellite-dashboard-$VERSION.zip" kiosk_dashboard.zip

@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Kiosk dashboard",
+        "description": "Home Assistant will serve the kiosk page at /kiosk_dashboard/index.html. Your config.js goes in /config/www/kiosk/: start from a copy of /config/custom_components/kiosk_dashboard/www/config.example.js."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Already set up: the page is at /kiosk_dashboard/index.html."
+    }
+  }
+}

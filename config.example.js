@@ -1,6 +1,7 @@
 // Kiosk dashboard configuration: an example house. Copy this file to
-// config.js, next to index.html, and make it yours: replace every entity
-// marked  // <-- entity  with one of your own. Plain JavaScript, no build step.
+// /config/www/kiosk/config.js (next to index.html when you installed the page
+// by hand) and make it yours: replace every entity marked  // <-- entity  with
+// one of your own. Plain JavaScript, no build step.
 // docs/configuration.md describes every option.
 //
 // Structure
