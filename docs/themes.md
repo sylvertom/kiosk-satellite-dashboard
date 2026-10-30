@@ -7,8 +7,9 @@ picks another on the kiosk itself, and `?theme=<name>` in the address tries one 
 changing anything. The [theme gallery](theme-gallery.md) shows each of them on
 the Show and on the Spot.
 
-**XP's wallpaper** is `themes/xp/bliss.jpg`, a picture you put there yourself: it is
-not part of the repository (`.gitignore` leaves it out). Without it, XP draws a blue sky
+**XP's wallpaper** is `themes/xp/bliss.jpg`, a picture you put there yourself (through
+HACS, in `/config/www/kiosk/themes/xp/`, where updates leave it): it is not part of the
+repository (`.gitignore` leaves it out). Without it, XP draws a blue sky
 over a green hill.
 
 A **mono** theme has one colour, its accent: it stands for every light's colour too, and

@@ -7,6 +7,14 @@ zip of the files to copy to Home Assistant ([Updating](docs/setup.md#updating)).
 
 ## Unreleased
 
+### Added
+
+- **Install through HACS**: the *Kiosk dashboard* integration serves the page at
+  `/kiosk_dashboard/index.html`, and HACS offers each new release as an update. Your
+  `config.js` goes in `/config/www/kiosk/`, where an install by hand already has it, and
+  an edit to it shows at the kiosk's next reload ([Through HACS](docs/setup.md#through-hacs)).
+  Installing by hand stays as it was.
+
 ## 1.4.0 - 2026-10-30
 
 ### Added

@@ -18,6 +18,16 @@ body:
     validations:
       required: true
   - type: dropdown
+    id: install
+    attributes:
+      label: Installed
+      options:
+        - Through HACS (the Kiosk dashboard integration)
+        - By hand, in /config/www/kiosk/
+        - The integration, by hand
+    validations:
+      required: true
+  - type: dropdown
     id: device
     attributes:
       label: Device
