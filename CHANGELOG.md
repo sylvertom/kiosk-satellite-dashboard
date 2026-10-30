@@ -7,6 +7,8 @@ zip of the files to copy to Home Assistant ([Updating](docs/setup.md#updating)).
 
 ## Unreleased
 
+## 1.5.0 - 2026-10-30
+
 ### Added
 
 - **Install through HACS**: the *Kiosk dashboard* integration serves the page at
