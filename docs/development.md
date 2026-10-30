@@ -29,7 +29,8 @@ Node.js 22 or later, and Google Chrome for the checks; Python 3 only to add icon
 | `js/events.js` | A room's events: asking its calendars, the count, the list, the panel's rows |
 | `js/view.js` | Building the room views, switching between them, the clock |
 | `js/room-menu.js` | The room menu, and the lights it counts and turns off |
-| `js/favorites.js` | Music Assistant favourites |
+| `js/favorites.js` | Music Assistant favourites: the switch between kinds, covers, playing one |
+| `js/music.js` | A room's music card on the Show: what its player plays, or its favourites |
 | `js/settings.js` | Settings in the menu: its entries, the list of themes, the version |
 | `js/menu.js` | The menu: its items, the Spot's ring, the Show's rail and folders, links |
 | `js/popover.js` | The detail panel and its tabs, or the room's events |
@@ -37,7 +38,7 @@ Node.js 22 or later, and Google Chrome for the checks; Python 3 only to add icon
 | `tools/mock-ha.mjs` | A stand-in for Home Assistant |
 | `tools/shoot.mjs` | The check suite: runs the files in `tools/checks/` in order |
 | `tools/checks/harness.mjs` | Headless Chrome, touch input, the mock's test hooks, shared helpers |
-| `tools/checks/*.mjs` | The checks, by part of the page: the Spot, the Show, Kiosk Satellite, the room menu, the menu, signing in, the themes, Settings, the alerts, the events |
+| `tools/checks/*.mjs` | The checks, by part of the page: the Spot, the Show, Kiosk Satellite, the room menu, the menu, signing in, the themes, Settings, the alerts, the events, the music card |
 | `tools/fetch_icons.py` | Adds icons to `js/icons.js` |
 | `tools/release.mjs` | Prepares a release: every `?v=` and the changelog at its version ([Changes and releases](#changes-and-releases)) |
 | `.github/workflows/checks.yml` | The check suite on GitHub, for every push to `main` and every pull request |
@@ -152,7 +153,10 @@ in the address being ignored, a login's token renewed before it runs out and whe
 Assistant refuses it, a refused kiosk token, and the rooms' events (the page's clock set
 to 10:00: what Home Assistant is asked, their order, the count, the Spot's line and the
 Show's tile and a swipe through them, the panel and Open calendar, an event added, none,
-a calendar that does not answer, each period, the list's lines and length).
+a calendar that does not answer, each period, the list's lines and length), and the
+music card (the favourites and the switch, one played on the room's player, what plays
+with its volume and pause, the media card taking its place, none on the Spot or without
+a player).
 
 All of that runs in desktop Chrome, which has far more memory and speed than an Echo:
 try a change on a kiosk as well (Synthwave's first grid looked right here and starved

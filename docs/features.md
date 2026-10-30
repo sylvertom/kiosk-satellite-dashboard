@@ -71,6 +71,9 @@ What the page does, screen by screen. [Configuration](configuration.md) says how
   belongs to. The list comes from Music Assistant each time the folder opens, so a
   station you star there shows up the next time; the Spot's ring shows the first ten by
   name. A script or a favourite says what it did in a short toast.
+- **Music card.** On the Show, a room can have a card under the dial for its speakers:
+  while they play nothing, the favourites in a strip, a tap to play one there; while they
+  play, the cover and title with pause, next and the volume.
 - **Themes.** Twelve to choose from: dark, light, Nord, E-ink, an amber CRT, a handheld
   console's greens, two desktops of the early 2000s, steampunk brass, a starship's
   console, and two that move: Matrix's falling code and a synthwave sunset. One for the whole house or one per kiosk, each with its own accent colour, or

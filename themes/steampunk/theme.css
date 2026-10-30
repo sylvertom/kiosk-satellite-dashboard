@@ -82,7 +82,7 @@ html[data-theme="steampunk"] .tile.on .tile-icon, html[data-theme="steampunk"] .
 }
 html[data-theme="steampunk"] .popover.off .pop-power { background: radial-gradient(circle at 40% 35%, #3a2a1c, #120b06); border: 0.18rem solid #b08d3a; color: #bfa47a; box-shadow: none; }
 /* leather panels in brass frames, riveted */
-html[data-theme="steampunk"].shape-wide .tile, html[data-theme="steampunk"] .media, html[data-theme="steampunk"].shape-wide .room-go {
+html[data-theme="steampunk"].shape-wide .tile, html[data-theme="steampunk"] .media, html[data-theme="steampunk"] .music-favs, html[data-theme="steampunk"].shape-wide .room-go {
   background: var(--rivets), var(--leather); border: var(--border-w) solid #a9853a;
   box-shadow: inset 0 0 0 0.12rem #3a260f, inset 0 0 1.2rem rgba(0, 0, 0, 0.5), 0 0.3rem 0.8rem rgba(0, 0, 0, 0.45);
 }

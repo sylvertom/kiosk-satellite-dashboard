@@ -206,6 +206,38 @@ span.title-btn { cursor: default; }
 .media.compact .media-volume, .media.compact .media-sources { display: none; }
 .media.off .media-art { color: var(--muted); }
 
+/* -------------------------------------------------------------- music */
+/* A room's music card (js/music.js): the media card while the room's
+   player plays, without the buttons it has no room for; the rest of the
+   time, in its place, the favourites, each its cover (or its icon) and its
+   name in a strip that scrolls sideways, the switch between radios and
+   playlists above. */
+.music { display: grid; min-height: 0; }
+.music > * { grid-area: 1 / 1; min-width: 0; }   /* one in the other's place */
+.music .media { grid-template-areas: "art info" "art transport" "volume volume"; padding: 0.65rem 0.7rem; column-gap: 0.7rem; row-gap: 0.4rem; }
+.music .media-art { width: 4rem; height: 4rem; font-size: 1.7rem; }
+.music .media-btn { width: 2.1rem; height: 2.1rem; font-size: 1.2rem; }
+.music .media-btn.play { width: 2.4rem; height: 2.4rem; font-size: 1.4rem; }
+.music .media-volume .slider { height: 2rem; }
+.music .media-btn.prev, .music .media-btn.pwr, .music .media-sources { display: none; }
+.music-favs {
+  border-radius: var(--r); background: var(--surface); border: var(--border-w) solid var(--border); padding: 0.65rem 0.7rem;
+  display: flex; flex-direction: column; justify-content: center; gap: 0.45rem;
+}
+.music .fav-switch { align-self: flex-start; padding: 0.15rem; box-shadow: none; }
+.music .fav-switch button { height: 1.7rem; padding: 0 0.7rem; font-size: 0.75rem; }
+.music-strip { display: flex; gap: 0.5rem; overflow-x: auto; overscroll-behavior: contain; touch-action: pan-x; scroll-snap-type: x proximity; scrollbar-width: none; }
+.music-strip::-webkit-scrollbar { display: none; }
+.music-fav { flex: none; width: 3.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; scroll-snap-align: start; transition: transform 0.12s var(--ease); }
+.music-fav.pressed { transform: scale(0.94); }
+.music-cover {
+  position: relative; overflow: hidden; width: 3.5rem; height: 3.5rem; border-radius: var(--r-inner);
+  display: flex; align-items: center; justify-content: center; background: var(--surface-2); color: var(--muted); font-size: 1.6rem;
+}
+.music-fav.with-cover .music-cover .icon { visibility: hidden; }
+.music-name { max-width: 100%; font-size: 0.7rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.music-note { font-size: 0.8rem; color: var(--muted); }
+
 /* ------------------------------------------------------------- events */
 /* The room's events (js/events.js): the chip among the sensors, which a tap
    opens; the list, --lines events in view (--ev-row each), which scrolls a

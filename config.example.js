@@ -121,6 +121,10 @@ window.KIOSK_CONFIG = {
   // media            a player card, shown while showWhen holds (or always)
   // player           the Music Assistant player (or group of players) the menu's
   //                  favourites play on, for the kiosks that belong to this room
+  // music            on the Show, a card under the dial for the room's player: while
+  //                  it plays, what it plays; the rest of the time, your Music
+  //                  Assistant favourites of these kinds, 'radio', 'playlist' or both,
+  //                  a tap to play one there
   // events           what the room's Home Assistant calendars hold: how many
   //                  events, a chip among the sensors ("3 today"; chip: false
   //                  leaves it out), and a list a swipe scrolls through, on the
@@ -199,6 +203,7 @@ window.KIOSK_CONFIG = {
         showWhen: { entity: 'input_boolean.projector', state: 'on' }, // <-- entity
       },
       player: 'media_player.living_room_speakers', // <-- entity (Music Assistant group)
+      music: ['radio', 'playlist'],
       background: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1280&q=75&auto=format&fit=crop', // <-- your picture
       fade: 0.6,
     },

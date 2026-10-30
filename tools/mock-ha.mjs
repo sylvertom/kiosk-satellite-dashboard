@@ -100,7 +100,7 @@ set('media_player.apple_tv', 'off', {
 // the menu's scripts and the Music Assistant players its favourites play on
 set('script.find_alex_phone', 'off');
 set('script.find_sam_phone', 'off');
-for (const id of MA_PLAYERS) set(id, 'idle');
+for (const id of MA_PLAYERS) set(id, 'idle', { supported_features: MA_FEATURES, volume_level: 0.3 });
 // the bedroom's calendars (their events below)
 set('calendar.family', 'off', { friendly_name: 'Family', message: 'Lunch with Sam', all_day: false });
 set('calendar.work', 'off', { friendly_name: 'Work', message: 'Quarterly review', all_day: false });
@@ -165,6 +165,7 @@ function getEvents(c, m) {
 // Radio Paradise's does not load: both keep their icon.
 const MA_ENTRY = 'mock-music-assistant';   // the config entry of its integration
 const MA_PLAYERS = ['media_player.bedroom_speakers', 'media_player.living_room_speakers', 'media_player.office_speakers'];
+const MA_FEATURES = 1 | 4 | 16 | 32 | 128 | 256 | 1024 | 4096 | 16384;   // pause, volume, previous, next, on, off, volume steps, stop, play
 const cover = (name) => `/mock/cover/${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.svg`;
 const libItem = (media_type, uri, name, image = cover(name), favorite = true) => ({ media_type, uri, name, version: '', image, favorite, explicit: null });
 const LIBRARY = () => ({
@@ -224,7 +225,15 @@ function apply(domain, service, data = {}, target = {}) {
     const st = states[id];
     if (!st) continue;
     const d = id.split('.')[0];
-    if (domain === 'music_assistant') { if (service === 'play_media') { st.s = 'playing'; st.a.media_title = data.media_id; touch(id); } continue; }
+    if (domain === 'music_assistant') {   // a favourite plays: its name and cover, as the player shows them
+      if (service === 'play_media') {
+        const it = Object.values(library).flat().find((i) => i.uri === data.media_id);
+        st.s = 'playing';
+        Object.assign(st.a, { media_title: it ? it.name : data.media_id, media_artist: it && it.media_type === 'radio' ? 'Live radio' : 'Music Assistant', entity_picture: (it && it.image) || '/mock/art.svg' });
+        touch(id);
+      }
+      continue;
+    }
     if (domain === 'script' || d === 'script') {
       if (id === 'script.projector_on') { states['input_boolean.projector'].s = 'on'; touch('input_boolean.projector'); mediaOn(); touch('media_player.apple_tv'); }
       if (id === 'script.projector_off') { states['input_boolean.projector'].s = 'off'; touch('input_boolean.projector'); states['media_player.apple_tv'].s = 'off'; touch('media_player.apple_tv'); }

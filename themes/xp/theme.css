@@ -54,7 +54,7 @@ html[data-theme="xp"].shape-round .with-wallpaper .views { background: none; }
 html[data-theme="xp"] .glow, html[data-theme="xp"].shape-round .views::before { display: none; }
 /* on the desktop, white text with a shadow; in the windows and on the buttons, black */
 html[data-theme="xp"] .view { --text: #ffffff; --muted: #eef4ff; color: var(--text); text-shadow: 0.06rem 0.08rem 0.12rem rgba(0, 0, 0, 0.8); }
-html[data-theme="xp"] .view .chip, html[data-theme="xp"] .view .slider, html[data-theme="xp"] .view .media,
+html[data-theme="xp"] .view .chip, html[data-theme="xp"] .view .slider, html[data-theme="xp"] .view .media, html[data-theme="xp"] .view .music-favs,
 html[data-theme="xp"].shape-wide .view .tile { --text: #000000; --muted: #4b4b4b; text-shadow: none; }
 html[data-theme="xp"] .view .sensor.on { color: #c6f7a8; }
 /* an alert on the desktop: the yellow of a warning balloon, legible on the sky */

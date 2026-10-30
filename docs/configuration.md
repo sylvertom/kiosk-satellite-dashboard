@@ -11,7 +11,7 @@ menu:        { items: [{ name, icon, shape?: 'round' | 'wide', link | script | i
 devices:     { '<Kiosk Satellite device name>': '<room key>' | { room: '<room key>', theme?: '<theme>' } }
 defaultRoom: '<room key>'
 alerts:      [{ entity, icon, on?, unit?, digits?, showWhen? }]
-rooms:       { <key>: { title, icon, sensors, modes, main, lights, media, player, events?, background?, fade? } }
+rooms:       { <key>: { title, icon, sensors, modes, main, lights, media, player, music?, events?, background?, fade? } }
 ```
 
 The arrangement is not configurable: it follows the screen. A square screen (the round
@@ -87,6 +87,7 @@ The order of `rooms` is the order in the room menu. Each room has:
 | `lights` | Light tiles: tap toggles, long-press (or the dots) opens the detail panel. A room with one light needs no tiles: `main` alone is enough |
 | `media` | A media player card, shown while `showWhen` matches (or always) |
 | `player` | The Music Assistant player (or group of players) the menu's favourites play on, for the kiosks that belong to this room |
+| `music` | On the Show, a card under the dial for the room's `player`: what it plays, or your favourites to play there (see [The music card](#the-music-card)) |
 | `events` | What the room's Home Assistant calendars hold: how many among the sensors, and a list (see [Events](#events)) |
 | `background`, `fade` | The room's own picture or colour behind it, and how far it fades, over the theme's (see [Theme](#theme)) |
 
@@ -100,6 +101,7 @@ modes:   { entity, name, icon }
 main, lights: { entity, name, icon, controls?: ['select.x', 'number.y'] }
 media:   { entity, name, icon, showWhen?: { entity, state } }
 player:  'media_player.x'
+music:   ['radio', 'playlist']
 events:  { calendars: ['calendar.x' | { entity, color }], period?, max?, chip?, lines?, link? }
 ```
 
@@ -226,6 +228,26 @@ Sendspin player is on). The page finds your Music Assistant instance from that p
   did not answer*.
 - A cover that does not load, for example an `http://` image on an `https://` dashboard,
   leaves the icon in its place.
+
+### The music card
+
+A room's `music` puts a card under the dial on the Show, for the room's `player`:
+
+```js
+player: 'media_player.kitchen_speakers',
+music: ['radio', 'playlist'],     // or one of them
+```
+
+- **While the player plays nothing**, your Music Assistant favourites of those kinds, as in
+  the menu: their covers and names in a strip a swipe scrolls through, the switch between
+  radios and playlists above it with both. A tap plays one on the room's `player`, the
+  room on screen (the menu's play on the kiosk's own room's).
+- **While it plays**, what it plays: the cover, the title, pause, next and the volume.
+  Pausing it brings the favourites back.
+- The dial makes room for it. While the room's `media` card shows, the music card steps
+  aside.
+- It needs the room's `player`; without one there is no card. The Spot has none: its
+  menu's favourites do the same.
 
 ### Settings
 

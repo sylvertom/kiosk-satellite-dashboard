@@ -5,9 +5,9 @@
 A fast, touch-first Home Assistant dashboard for Echo devices running
 [Kiosk Satellite](https://github.com/jxlarrea/kiosk-satellite). One view per room with
 its sensors, mode chips, a brightness dial, light tiles that are sliders themselves, a
-detail panel for colour and effects, a media card, the events of its calendars, a room
-menu behind the room title, and a menu for the kiosk's own features with your Music
-Assistant favourites. It is plain HTML, CSS and JavaScript with no build step and no
+detail panel for colour and effects, a media card, a music card, the events of its
+calendars, a room menu behind the room title, and a menu for the kiosk's own features
+with your Music Assistant favourites. It is plain HTML, CSS and JavaScript with no build step and no
 dependencies, so it loads in a blink where the Home Assistant frontend takes seconds.
 
 ![The dashboard on an Echo Spot, an Echo Show 5 and an Echo Show 8](docs/images/demo.gif)

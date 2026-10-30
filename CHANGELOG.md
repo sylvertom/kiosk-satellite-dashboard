@@ -7,6 +7,14 @@ zip of the files to copy to Home Assistant ([Updating](docs/setup.md#updating)).
 
 ## Unreleased
 
+### Added
+
+- **Music card**: on the Show, a room's `music` puts a card under the dial for the room's
+  speakers. While they play nothing it shows your Music Assistant favourites, a tap to
+  play one there; while they play, the cover and title with pause, next and the volume.
+  To have it, add `music: ['radio', 'playlist']` to a room with a `player` in your
+  `config.js` ([The music card](docs/configuration.md#the-music-card)).
+
 ### Changed
 
 - **The Echo Show makes more of its screen**: a smaller dial, and the light tiles as
