@@ -7,6 +7,8 @@ zip of the files to copy to Home Assistant ([Updating](docs/setup.md#updating)).
 
 ## Unreleased
 
+## 1.5.1 - 2026-10-30
+
 ### Fixed
 
 - **Through HACS, the page goes into Kiosk Satellite**: the integration serves it at
