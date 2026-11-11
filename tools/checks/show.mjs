@@ -1,6 +1,6 @@
 // Checks on the Echo Show 5 (960×480) in the bedroom, the Echo Show 8 (1280×800) in the living room, and the light
 // tiles on an Echo Show 8 as Kiosk Satellite lays it out (960×600).
-import { sleep, check, openPage, mockStates, mockSet, lastCall, callLog, failCalls, ROOT_ITEMS, RADIOS, PLAYLISTS, text, has, activeRoom, lightsOn, onScreen, tapTab, load, setClock, changeRoom, addEvent } from './harness.mjs';
+import { sleep, check, openPage, mockStates, mockReaches, callReaches, mockSet, lastCall, callLog, failCalls, ROOT_ITEMS, RADIOS, PLAYLISTS, text, has, activeRoom, lightsOn, onScreen, tapTab, load, setClock, changeRoom, addEvent } from './harness.mjs';
 
 // 4. Bedroom Show (Echo Show 5, 960×480): rail on the right; light theme.
 export async function bedroomShow5() {
@@ -39,22 +39,22 @@ export async function bedroomShow5() {
     && await p.eval(`(() => { const g = document.querySelector('.view.active .lights'); return g.scrollHeight <= g.clientHeight + 1; })()`),
   `the dial and the lights side by side, the lights in the middle of the height, the events first, all in view (dial ${bar.h.toFixed(0)}px, events ${evs.h.toFixed(0)}px, tile ${tile1.h.toFixed(0)}px)`);
   check(await p.eval(`getComputedStyle(document.querySelector('.view.active .main .bar.group')).backgroundColor === 'rgba(0, 0, 0, 0)' && !document.querySelector('.view.active .main .bar.group .power')`), 'the main control is the dial alone, no card behind it');
+  const pct = (s, id) => Math.round(s[id].a.brightness / 2.55);
   await p.dragTo('.view.active .main .bar.group', 0.45, 0.3);
-  st = await mockStates();
-  check(Math.abs(Math.round(st['light.bedroom_lights'].a.brightness / 2.55) - 45) <= 3, 'dragging across the dial dims the room');
-  check((await text(p, '.view.active .main .bar.group .state')).startsWith(String(Math.round(st['light.bedroom_lights'].a.brightness / 2.55)) + '%'), 'the middle of the dial shows the level');
+  check(await mockReaches((s) => Math.abs(pct(s, 'light.bedroom_lights') - 45) <= 3), 'dragging across the dial dims the room');
+  st = await mockStates();   // the level the mock has reached
+  check((await text(p, '.view.active .main .bar.group .state')).startsWith(String(pct(st, 'light.bedroom_lights')) + '%'), 'the middle of the dial shows the level');
   await p.dragArc('.view.active .main .bar.group .dial', 0.45, 0.7);
-  st = await mockStates();
-  check(Math.abs(Math.round(st['light.bedroom_lights'].a.brightness / 2.55) - 70) <= 3, `dragging along the dial's arc sets the level by angle (got ${Math.round(st['light.bedroom_lights'].a.brightness / 2.55)}%)`);
+  check(await mockReaches((s) => Math.abs(pct(s, 'light.bedroom_lights') - 70) <= 3), `dragging along the dial's arc sets the level by angle (got ${pct(await mockStates(), 'light.bedroom_lights')}%)`);
   await p.tapSel('.view.active .main .bar.group .dial-centre');
-  check((await mockStates())['light.bedroom_lights'].s === 'off', 'a tap on the name in the middle turns the room off');
+  check(await mockReaches((s) => s['light.bedroom_lights'].s === 'off'), 'a tap on the name in the middle turns the room off');
   await p.tapSel('.view.active .main .bar.group .dial-centre');
   check(await p.waitFor(`document.querySelector('.view.active .main .bar.group').classList.contains('on')`), 'and on again');
   // Tiles: the pill at the bottom is a slider for that light.
   await p.dragTo('.view.active .tile:nth-child(2) .tile-slider', 0.6);
-  st = await mockStates();
-  check(Math.abs(Math.round(st['light.bedroom_ceiling'].a.brightness / 2.55) - 60) <= 3, 'dragging a tile\'s pill dims that light alone');
-  check((await text(p, '.view.active .tile:nth-child(2) .tile-state')).replace('%', '') === String(Math.round(st['light.bedroom_ceiling'].a.brightness / 2.55)), 'the pill shows the level');
+  check(await mockReaches((s) => Math.abs(pct(s, 'light.bedroom_ceiling') - 60) <= 3), 'dragging a tile\'s pill dims that light alone');
+  st = await mockStates();   // the level the mock has reached
+  check((await text(p, '.view.active .tile:nth-child(2) .tile-state')).replace('%', '') === String(pct(st, 'light.bedroom_ceiling')), 'the pill shows the level');
   // A call Home Assistant refuses: a toast says so, and the pill goes back to the level the light has.
   const level = await text(p, '.view.active .tile:nth-child(2) .tile-state');
   await failCalls(true);
@@ -126,9 +126,9 @@ export async function bedroomShow5() {
   await p.tapSel('#menu .menu-item[aria-label="Find my phone"]');
   await sleep(400);
   check((await p.eval(folderNames)) === 'Back,Alex,Sam' && await p.eval(`document.getElementById('folder-menu').classList.contains('open') && !document.querySelector('#menu .menu-item[aria-label="Music"]').classList.contains('active') && document.querySelector('#menu .menu-item[aria-label="Find my phone"]').classList.contains('active')`), 'another folder\'s button swaps the cards: Back and the two phones, the mark moves');
+  const sam = await p.eval(`window.KIOSK_CONFIG.menu.items.find((i) => i.name === 'Find my phone').items[1].script`);
   await p.tapSel('#folder-menu .room-card:nth-child(3) .room-go');
-  let fl = await lastCall();
-  check(await p.waitFor(`document.getElementById('folder-menu').hidden`) && fl.domain === 'script' && fl.target.entity_id === (await p.eval(`window.KIOSK_CONFIG.menu.items.find((i) => i.name === 'Find my phone').items[1].script`)) && await p.waitFor(`document.getElementById('toast').textContent === 'Find my phone · Sam'`), 'Sam runs their script, the folder closes and a toast says so');
+  check(await p.waitFor(`document.getElementById('folder-menu').hidden`) && await callReaches((c) => c.domain === 'script' && c.target.entity_id === sam) && await p.waitFor(`document.getElementById('toast').textContent === 'Find my phone · Sam'`), 'Sam runs their script, the folder closes and a toast says so');
   await p.tapSel('.view.active .title-btn');
   await sleep(300);
   await p.tapSel('#room-menu .room-card:nth-child(3) .room-go');
@@ -138,9 +138,10 @@ export async function bedroomShow5() {
   await p.tapSel('#menu .menu-item[aria-label="Music"]');
   await sleep(400);
   await p.tapSel('#folder-menu .fav-switch button:nth-child(1)');
+  const bedroomPlayer = await p.eval(`window.KIOSK_CONFIG.rooms.bedroom.player`);
   await p.tapSel('#folder-menu .room-card:nth-child(2) .room-go');
-  fl = await lastCall();
-  check(fl.domain === 'music_assistant' && fl.service === 'play_media' && fl.target.entity_id === (await p.eval(`window.KIOSK_CONFIG.rooms.bedroom.player`)) && fl.data.media_id === 'library://radio/7' && fl.data.media_type === 'radio', `show 5 showing the office: a radio still plays on the bedroom's player, the room this kiosk belongs to (got ${JSON.stringify(fl)})`);
+  check(await callReaches((c) => c.domain === 'music_assistant' && c.service === 'play_media' && c.target.entity_id === bedroomPlayer && c.data.media_id === 'library://radio/7' && c.data.media_type === 'radio'),
+    `show 5 showing the office: a radio still plays on the bedroom's player, the room this kiosk belongs to (got ${JSON.stringify(await lastCall())})`);
   bar = await box('.main .bar.group');
   const vw = await box('');
   check(bar.h > 250 && Math.abs((bar.l + bar.r) / 2 - (vw.l + vw.r) / 2) < 10 && !(await has(p, '.view.active .tile')), 'office: the ceiling light\'s dial alone, in the middle');
@@ -188,14 +189,11 @@ export async function livingShow8() {
   check(await p.eval(`document.querySelectorAll('.view.active .media-sources .chip').length`) === 5, 'media card lists the sources');
   await p.shot('show8-living-media.png');
   await p.tapSel('.view.active .media-sources .chip:nth-child(2)');
-  let st = await mockStates();
-  check(st['media_player.apple_tv'].a.source === 'Plex', 'a source chip switches the app');
+  check(await mockReaches((s) => s['media_player.apple_tv'].a.source === 'Plex'), 'a source chip switches the app');
   await p.dragTo('.view.active .media-volume .slider', 0.7);
-  st = await mockStates();
-  check(st['media_player.apple_tv'].a.volume_level >= 0.65 && st['media_player.apple_tv'].a.volume_level <= 0.75, `volume slider sets the volume (got ${st['media_player.apple_tv'].a.volume_level})`);
+  check(await mockReaches((s) => s['media_player.apple_tv'].a.volume_level >= 0.65 && s['media_player.apple_tv'].a.volume_level <= 0.75), `volume slider sets the volume (got ${(await mockStates())['media_player.apple_tv'].a.volume_level})`);
   await p.tapSel('.view.active .media-btn.next');
-  st = await mockStates();
-  check(st['media_player.apple_tv'].a.media_title === 'Next episode', 'next button skips');
+  check(await mockReaches((s) => s['media_player.apple_tv'].a.media_title === 'Next episode'), 'next button skips');
 
   // WLED strip: effects, palette select, speed number.
   await p.tapSel('.view.active .tile:nth-child(4) .tile-more');
@@ -205,20 +203,16 @@ export async function livingShow8() {
   check(JSON.stringify(tabs) === JSON.stringify(['Colour', 'Effects', 'More']), `WLED tabs are colour, effects, more (got ${tabs})`);
   await tapTab(p, 'Effects');
   await p.tapSel('#popover .pane:not([hidden]) .chip:nth-child(5)');
-  st = await mockStates();
-  check(st['light.tv_strip'].a.effect === 'Rainbow', 'effect chip sets the WLED effect');
+  check(await mockReaches((s) => s['light.tv_strip'].a.effect === 'Rainbow'), 'effect chip sets the WLED effect');
   await p.shot('show8-popover-effects.png');
   await tapTab(p, 'More');
   await p.tapSel('#popover .pane:not([hidden]) .hscroll .chip:nth-child(4)');
-  st = await mockStates();
-  check(st['select.tv_strip_color_palette'].s === 'Ocean', 'palette chip selects the option');
+  check(await mockReaches((s) => s['select.tv_strip_color_palette'].s === 'Ocean'), 'palette chip selects the option');
   await p.dragTo('#popover .pane:not([hidden]) .slider', 0.9);
-  st = await mockStates();
-  check(Number(st['number.tv_strip_speed'].s) >= 220, `speed slider sets the number (got ${st['number.tv_strip_speed'].s})`);
+  check(await mockReaches((s) => Number(s['number.tv_strip_speed'].s) >= 220), `speed slider sets the number (got ${(await mockStates())['number.tv_strip_speed'].s})`);
   await p.shot('show8-popover-more.png');
   await p.tapSel('.pop-actions [data-s="off"]');
-  st = await mockStates();
-  check(st['light.tv_strip'].s === 'off', 'Off button turns the strip off');
+  check(await mockReaches((s) => s['light.tv_strip'].s === 'off'), 'Off button turns the strip off');
   await p.tapSel('#pop-close');
 
   // Group popover lists its members.

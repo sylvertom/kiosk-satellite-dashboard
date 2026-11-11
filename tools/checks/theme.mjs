@@ -1,6 +1,6 @@
 // Checks of the theme: the accent taking the colour of the light the dial controls, the rooms' pictures, and
 // every theme of themes/themes.js.
-import { sleep, check, openPage, failPictures, pictureReferers, mockStates, activeRoom, load, reset, slowFile, BASE } from './harness.mjs';
+import { sleep, check, openPage, failPictures, pictureReferers, mockReaches, activeRoom, load, reset, slowFile, BASE } from './harness.mjs';
 
 export const ACCENT = '242,175,72';   // the dark theme's, as config.example.js sets none
 // The accent as the page paints it, once it and what takes it have faded to it.
@@ -28,7 +28,7 @@ export async function accentFollowsLight() {
     check(near(a, 340), `spot: the pink strip gives a pink accent (got ${a})`);
     check(await p.eval(`getComputedStyle(document.querySelector('.view.active .bar.current .power')).backgroundColor`) === `rgb(${a.replace(/,/g, ', ')})`, 'its power button takes that colour');
     await p.tapSel('.view.active .bar.current .power');
-    check(await accent(p) === ACCENT && (await mockStates())['light.bedroom_strips'].s === 'off', 'spot: turned off, the theme\'s accent again');
+    check(await mockReaches((st) => st['light.bedroom_strips'].s === 'off') && await accent(p) === ACCENT, 'spot: turned off, the theme\'s accent again');
     await p.tapSel('.view.active .bar.current .power');
     check(near(await accent(p), 340), 'and on, pink again');
     await p.tapSel('.view.active .title-btn');
@@ -192,7 +192,7 @@ export async function themes() {
         `${where}, ${name}: ${scene ? 'its scene moves behind the rooms' : 'no scene behind the rooms'}`);
       // A layer many times the screen is more than an Echo's graphics memory holds: other parts of the page go missing.
       const layers = await p.layers(), largest = Math.max(...layers.map((l) => l.w * l.h)) / (width * height);
-      check(layers.length > 0 && largest <= 1.5, `${where}, ${name}: no layer of the page much larger than the screen (the largest ${largest.toFixed(1)} screens)`);
+      check(layers.length > 0 && largest <= 1.5, `${where}, ${name}: no layer of the page much larger than the screen (${layers.length ? `the largest ${largest.toFixed(1)} screens` : 'Chrome reported no layers'})`);
       if (where === 'show') {
         const widths = await p.eval(`(() => { const c = document.querySelector('.view.active .clock'), was = c.textContent;
           const w = ['00:00', '11:11', '23:59', '09:09', '15:55'].map((t) => { c.textContent = t; return c.getBoundingClientRect().width; }); c.textContent = was; return w; })()`);

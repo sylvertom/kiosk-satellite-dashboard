@@ -1,6 +1,6 @@
 // Checks of a room's music card: the living room's, on the Echo Show 8 (1280×800) and as Kiosk Satellite lays an Echo
 // Show 8 out (960×600).
-import { check, openPage, mockReaches, lastCall, RADIOS, PLAYLISTS, has, load, changeRoom } from './harness.mjs';
+import { check, openPage, mockReaches, callReaches, lastCall, RADIOS, PLAYLISTS, has, load, changeRoom } from './harness.mjs';
 
 const names = (p) => p.eval(`[...document.querySelectorAll('.view.active .music-fav')].map((b) => b.getAttribute('aria-label')).join()`);
 const shown = (p, sel) => p.eval(`(() => { const e = document.querySelector('.view.active ' + ${JSON.stringify(sel)}); return !!e && !e.hidden && e.getBoundingClientRect().height > 0; })()`);
@@ -28,9 +28,8 @@ export async function musicShow8() {
 
   // A tap plays one on the room's player, a toast says so, and the card shows what plays.
   await p.tapSel('.view.active .music-fav:nth-child(2)');
-  const call = await lastCall();
-  check(call.domain === 'music_assistant' && call.service === 'play_media' && call.target.entity_id === 'media_player.living_room_speakers' && call.data.media_id === 'library://radio/1' && call.data.media_type === 'radio'
-    && await p.waitFor(`document.getElementById('toast').textContent === 'FIP'`), `show 8: a tap on FIP plays it on the living room's player, a toast says so (got ${JSON.stringify(call)})`);
+  check(await callReaches((c) => c.domain === 'music_assistant' && c.service === 'play_media' && c.target.entity_id === 'media_player.living_room_speakers' && c.data.media_id === 'library://radio/1' && c.data.media_type === 'radio')
+    && await p.waitFor(`document.getElementById('toast').textContent === 'FIP'`), `show 8: a tap on FIP plays it on the living room's player, a toast says so (got ${JSON.stringify(await lastCall())})`);
   check(await p.waitFor(`(document.querySelector('.view.active .music .media-title') || {}).textContent === 'FIP'`) && await shown(p, '.music .media') && !(await shown(p, '.music-favs')),
     'show 8: while it plays, the card shows what plays in the favourites\' place');
   const playing = await box(p, '.music');

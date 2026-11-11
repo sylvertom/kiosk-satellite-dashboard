@@ -16,6 +16,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const STARTED = Date.now();
 const args = process.argv.slice(2);
 const at = args.indexOf('--config');
 const CONFIG = path.resolve(at >= 0 ? args.splice(at, 2)[1] : path.join(ROOT, 'config.example.js'));
@@ -435,6 +436,8 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
+  // test hook: the folder this mock serves and when it started, for the checks to refuse another folder's or an older one
+  if (url.pathname === '/__mock') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ root: ROOT, started: STARTED })); return; }
   if (url.pathname === '/__states') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(states)); return; }
   if (url.pathname === '/__set' && req.method === 'POST') { // test hook: {entity, state}
     let body = '';
@@ -486,5 +489,11 @@ const server = http.createServer((req, res) => {
 server.on('upgrade', (req, socket) => {
   if (new URL(req.url, 'http://x').pathname === '/api/websocket') handleSocket(req, socket);
   else socket.destroy();
+});
+// A port already taken, most likely by a mock left running: one line saying so, instead of dying unseen.
+server.on('error', (e) => {
+  if (e.code !== 'EADDRINUSE') throw e;
+  console.error(`Port ${PORT} is taken, by a mock left running maybe: pkill -f tools/mock-ha.mjs, then start this one again`);
+  process.exit(1);
 });
 server.listen(PORT, '127.0.0.1', () => console.log(`mock Home Assistant on http://127.0.0.1:${PORT}/  (page: /index.html?device=Echo+Spot+Bedroom, config: ${path.relative(process.cwd(), CONFIG)})`));

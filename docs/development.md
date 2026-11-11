@@ -108,6 +108,10 @@ node tools/mock-ha.mjs &
 node tools/shoot.mjs              # Google Chrome; elsewhere than macOS set CHROME=<path>
 ```
 
+The suite stops before it starts when the mock on port 8123 is not this folder's, or started
+before `tools/mock-ha.mjs` last changed: stop it with `pkill -f tools/mock-ha.mjs` and start
+it again.
+
 It drives headless Chrome with touch events at 480×480, 960×480, 960×600 (an Echo Show 8
 as Kiosk Satellite lays it out) and 1280×800 against the mock and prints `ok` or `FAIL` for each of its checks, over 500 of them. The example's
 background pictures come from Unsplash: the suite fetches each once and hands it to the page, or a made-up
