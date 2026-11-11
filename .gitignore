@@ -10,3 +10,6 @@ screenshots/
 
 # A picture of your own for the XP theme, not part of the repository (docs/themes.md)
 themes/xp/bliss.jpg
+
+# Worktrees Claude Code makes for a task, each on its own branch
+.claude/worktrees/
