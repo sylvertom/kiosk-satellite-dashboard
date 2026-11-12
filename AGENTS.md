@@ -38,6 +38,6 @@ A static Home Assistant dashboard for Echo devices running Kiosk Satellite: plai
 
 ## Known pitfalls
 
-- A check that reads the mock after a tap waits for it with `mockReaches()` (`tools/checks/harness.mjs`): reading at once fails on GitHub's slower macOS runner.
+- A check that reads the mock after a tap or a drag waits for it with `mockReaches()` for the states, or `callReaches()` for the last call (`tools/checks/harness.mjs`): reading at once fails on GitHub's slower macOS runner.
 
 <!-- /bmad:context -->
