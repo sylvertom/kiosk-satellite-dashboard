@@ -24,7 +24,6 @@ A static Home Assistant dashboard for Echo devices running Kiosk Satellite: plai
 ## Running and verifying
 
 - After a change, run `node tools/mock-ha.mjs &` then `node tools/shoot.mjs`: every check must pass. Add checks for new behaviour, in the file of `tools/checks/` for that part of the page.
-- Stop a mock left running before starting one (`pkill -f tools/mock-ha.mjs`): a second mock dies on the taken port 8123 without a word, and the checks run against the old one's code.
 - The suite takes about 8 minutes and has no single-file mode: run it in the background, not under a short timeout.
 - A run that crashes leaves its Chrome running: `pkill -f kiosk-shoot-` before the next.
 - `screenshots/` is ignored by git. Refresh `docs/images/` only on purpose, with `node tools/shoot.mjs --docs`.
@@ -39,6 +38,6 @@ A static Home Assistant dashboard for Echo devices running Kiosk Satellite: plai
 
 ## Known pitfalls
 
-- A check that reads the mock after a tap waits for it with `mockReaches()` (`tools/checks/harness.mjs`): reading at once fails on GitHub's slower macOS runner. About 20 older checks still read at once: don't copy them.
+- A check that reads the mock after a tap waits for it with `mockReaches()` (`tools/checks/harness.mjs`): reading at once fails on GitHub's slower macOS runner.
 
 <!-- /bmad:context -->

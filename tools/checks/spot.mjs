@@ -1,5 +1,5 @@
 // Checks on the Echo Spot (480×480, round), in the bedroom and in the living room.
-import { sleep, check, openPage, mockStates, mockReaches, mockSet, noEvents, callLog, lastCall, setLibrary, ROOT_ITEMS, RADIOS, PLAYLISTS, RING_FITS, SWITCH_GAP, text, has, activeRoom, lightsOn, menuOpen, onScreen, insideRim, POP_PARTS, tapTab, load } from './harness.mjs';
+import { sleep, check, openPage, mockStates, mockReaches, callReaches, mockSet, noEvents, callLog, lastCall, setLibrary, ROOT_ITEMS, RADIOS, PLAYLISTS, RING_FITS, SWITCH_GAP, text, has, activeRoom, lightsOn, menuOpen, onScreen, insideRim, POP_PARTS, tapTab, load } from './harness.mjs';
 
 // 1. Bedroom Spot, round 480×480.
 export async function bedroomSpot() {
@@ -56,7 +56,7 @@ export async function bedroomSpot() {
   await mockSet('binary_sensor.bedroom_presence', 'on');
   check(await p.waitFor(`${SENSORS} === 3 && ${CHIP}`), 'the sensors and the events\' count come back');
 
-  // Tap a tile: Ceiling goes off. The run's first call, on a fresh Chrome: it can be slow to reach the mock.
+  // Tap a tile: Ceiling goes off.
   await p.tapSel('.view.active .tile:nth-child(1)');
   check(await mockReaches((st) => st['light.bedroom_ceiling'].s === 'off'), 'tap tile toggles the light off');
   await p.tapSel('.view.active .tile:nth-child(1)');
@@ -67,7 +67,7 @@ export async function bedroomSpot() {
   const rimP = () => p.eval(`parseFloat(getComputedStyle(document.querySelector('.view.active .dial.rim')).getPropertyValue('--p'))`);
   const mainName = () => text(p, '.view.active .main .bar.current .name');
   const swipe = (to) => p.dragTo('.view.active .main', to, 0.5, to < 0.5 ? 0.7 : 0.33);   // to the right: from the power button
-  let st = await mockStates();
+  const st = await mockStates();
   check(Math.abs(await rimP() - st['light.bedroom_lights'].a.brightness / 255) < 0.03, 'spot: the rim dial shows the room level');
   // While the finger moves, the light shown follows it and the next one comes in alongside, a slot's width behind,
   // fading in as the other fades out. A drag that falls short of a third of the way springs back.
@@ -83,13 +83,14 @@ export async function bedroomSpot() {
   const st2 = await mockStates();
   check(['light.bedroom_lights', 'light.bedroom_ceiling'].every((id) => st2[id].a.brightness === st[id].a.brightness), 'and dims nothing: only the rim does');
   check(await p.waitFor(`Math.abs(parseFloat(getComputedStyle(document.querySelector('.view.active .dial.rim')).getPropertyValue('--p')) - ${st2['light.bedroom_ceiling'].a.brightness / 255}) < 0.03`), 'spot: the rim follows the light shown');
+  const pct = (s, id) => Math.round(s[id].a.brightness / 2.55);
   await p.dragArc('.view.active .dial.rim', 0.8, 0.5);
-  st = await mockStates();
-  const cp = Math.round(st['light.bedroom_ceiling'].a.brightness / 2.55);
-  check(cp >= 47 && cp <= 53 && st['light.bedroom_nightstand_1'].a.brightness === st2['light.bedroom_nightstand_1'].a.brightness, `spot: the rim dims that light alone (got ${cp}%)`);
+  check(await mockReaches((s) => pct(s, 'light.bedroom_ceiling') >= 47 && pct(s, 'light.bedroom_ceiling') <= 53 && s['light.bedroom_nightstand_1'].a.brightness === st2['light.bedroom_nightstand_1'].a.brightness),
+    `spot: the rim dims that light alone (got ${pct(await mockStates(), 'light.bedroom_ceiling')}%)`);
   await p.tapSel('.view.active .main .bar.current .power');
-  check((await mockStates())['light.bedroom_ceiling'].s === 'off' && (await mockStates())['light.bedroom_lights'].s === 'on', 'spot: its power button turns that light alone off');
+  check(await mockReaches((s) => s['light.bedroom_ceiling'].s === 'off' && s['light.bedroom_lights'].s === 'on'), 'spot: its power button turns that light alone off');
   await p.tapSel('.view.active .main .bar.current .power');
+  await mockReaches((s) => s['light.bedroom_ceiling'].s === 'on');   // on again, before the swipe that must leave it so
   await swipe(0.85);
   check(await p.waitFor(`document.querySelector('.view.active .main .bar.current').classList.contains('group')`), 'a swipe to the right goes back');
   check((await mockStates())['light.bedroom_ceiling'].s === 'on', 'a swipe that starts on the power button does not press it');
@@ -115,19 +116,16 @@ export async function bedroomSpot() {
   check(Math.abs(stripAt - (sTiles[1][0].l - sTiles[0][0].l)) < 2 && await p.eval(`document.querySelector('.view.active > .dots span:nth-child(2)').classList.contains('on')`), `spot: a swipe on the lights moves them on by one (${stripAt.toFixed(0)}px), the dots follow`);
   await p.eval(`document.querySelector('.view.active .lights').scrollTo({ left: 0, behavior: 'instant' }), true`);
   await p.dragArc('.view.active .dial.rim', 0.8, 0.3);
-  st = await mockStates();
-  const rp = Math.round(st['light.bedroom_lights'].a.brightness / 2.55);
-  check(rp >= 27 && rp <= 33, `spot: dragging along the rim sets the level by angle (got ${rp}%)`);
-  check(st['light.bedroom_ceiling'].a.brightness === st['light.bedroom_lights'].a.brightness, 'group members followed');
+  check(await mockReaches((s) => pct(s, 'light.bedroom_lights') >= 27 && pct(s, 'light.bedroom_lights') <= 33), `spot: dragging along the rim sets the level by angle (got ${pct(await mockStates(), 'light.bedroom_lights')}%)`);
+  check(await mockReaches((s) => s['light.bedroom_ceiling'].a.brightness === s['light.bedroom_lights'].a.brightness), 'group members followed');
   check(await p.eval(`(() => { const t = document.querySelector('.view.active .tile'); const i = t.querySelector('.tile-icon').getBoundingClientRect(); return Math.abs(i.width - i.height) < 1 && i.width > 45 && getComputedStyle(t.querySelector('.tile-slider')).display === 'none'; })()`), 'spot: lights are round buttons without sliders');
   await p.tapSel('.view.active .main .power');
-  st = await mockStates();
-  check(st['light.bedroom_lights'].s === 'off', 'spot: the power button turns the room off');
+  check(await mockReaches((s) => s['light.bedroom_lights'].s === 'off'), 'spot: the power button turns the room off');
   await p.tapSel('.view.active .main .power');
 
   // The round mode buttons toggle their entity.
   await p.tapSel('.view.active .chip:nth-child(2)');
-  check((await mockStates())['switch.adaptive_lighting_sleep_mode_bedroom'].s === 'on', 'spot: a round mode button toggles its switch');
+  check(await mockReaches((s) => s['switch.adaptive_lighting_sleep_mode_bedroom'].s === 'on'), 'spot: a round mode button toggles its switch');
   await p.tapSel('.view.active .chip:nth-child(2)');
 
   // Long-press a tile opens the popover; it offers the white tab for a colour-temperature light.
@@ -150,11 +148,9 @@ export async function bedroomSpot() {
   check(await insideRim(p, POP_PARTS), 'spot popover: the name and every control inside the rim');
   await p.shot('spot-popover-white.png');
   await p.dragTo('#popover .pane:not([hidden]) .slider.gradient', 0.9);
-  st = await mockStates();
-  check(st['light.bedroom_ceiling'].a.color_temp_kelvin >= 5500, `white slider sets the colour temperature (got ${st['light.bedroom_ceiling'].a.color_temp_kelvin}K)`);
+  check(await mockReaches((s) => s['light.bedroom_ceiling'].a.color_temp_kelvin >= 5500), `white slider sets the colour temperature (got ${(await mockStates())['light.bedroom_ceiling'].a.color_temp_kelvin}K)`);
   await p.dragTo('#popover .pop-body .slider.big', 0.25);
-  st = await mockStates();
-  check(Math.round(st['light.bedroom_ceiling'].a.brightness / 2.55) <= 30, 'popover brightness slider dims the light');
+  check(await mockReaches((s) => pct(s, 'light.bedroom_ceiling') <= 30), 'popover brightness slider dims the light');
   await p.tapSel('#pop-tab');
   check(await p.waitFor(`document.getElementById('popover').hidden`), 'spot: the tab closes the popover');
 
@@ -172,16 +168,14 @@ export async function bedroomSpot() {
   check(sw.w >= 34 && Math.abs(sw.w - sw.h) < 1, `spot popover: large round swatches (${sw.w.toFixed(0)}px)`);
   await p.shot('spot-popover-colour.png');
   await p.tapSel('#popover .swatches .swatch:nth-child(5)');
-  st = await mockStates();
-  check(st['light.bedroom_strips'].a.hs_color && st['light.bedroom_strips'].a.hs_color[0] === 180, 'a swatch sets the colour');
+  check(await mockReaches((s) => s['light.bedroom_strips'].a.hs_color && s['light.bedroom_strips'].a.hs_color[0] === 180), 'a swatch sets the colour');
   await tapTab(p, 'Effects');
   await p.tapSel('#popover .pane:not([hidden]) .chip:nth-child(3)');
-  st = await mockStates();
-  check(st['light.bedroom_strips'].a.effect === 'Fireplace', 'an effect chip starts the effect');
+  check(await mockReaches((s) => s['light.bedroom_strips'].a.effect === 'Fireplace'), 'an effect chip starts the effect');
   await p.tapSel('#popover .pop-power');
-  check((await mockStates())['light.bedroom_strips'].s === 'off' && await p.waitFor(`document.querySelector('#popover .popover').classList.contains('off')`), 'spot popover: the power button turns the light off');
+  check(await mockReaches((s) => s['light.bedroom_strips'].s === 'off') && await p.waitFor(`document.querySelector('#popover .popover').classList.contains('off')`), 'spot popover: the power button turns the light off');
   await p.tapSel('#popover .pop-power');
-  check((await mockStates())['light.bedroom_strips'].s === 'on', 'and on again');
+  check(await mockReaches((s) => s['light.bedroom_strips'].s === 'on'), 'and on again');
   await p.tap(30, 240); await sleep(400);
   check(await p.eval(`document.getElementById('popover').hidden`), 'spot popover: a tap beside the controls closes it');
 
@@ -211,10 +205,9 @@ export async function bedroomSpot() {
   await p.dragTo('.view.active .main', 0.15, 0.5, 0.75);
   check((await mockStates())['light.office_lights'].a.brightness === ob && (await text(p, '.view.active .main .bar.current .name')) === 'Ceiling' && !(await has(p, '.view.active .main-arrow')), 'spot office: a swipe across its only light changes nothing, and no arrows say it would');
   await p.dragArc('.view.active .dial.rim', 0.8, 0.4);
-  const op = Math.round((await mockStates())['light.office_lights'].a.brightness / 2.55);
-  check(op >= 36 && op <= 44, `office: the rim dims the ceiling light (got ${op}%)`);
+  check(await mockReaches((s) => pct(s, 'light.office_lights') >= 36 && pct(s, 'light.office_lights') <= 44), `office: the rim dims the ceiling light (got ${pct(await mockStates(), 'light.office_lights')}%)`);
   await p.tapSel('.view.active .chip:nth-child(1)');
-  check((await mockStates())['switch.adaptive_lighting_office'].s === 'off', 'office: the Adaptive chip toggles its switch');
+  check(await mockReaches((s) => s['switch.adaptive_lighting_office'].s === 'off'), 'office: the Adaptive chip toggles its switch');
   await p.tapSel('.view.active .title-btn');
   await p.tapSel('#menu-handle');
   check(await p.waitFor(`document.getElementById('room-menu').hidden`) && (await activeRoom(p)) === 'office' && !(await p.eval(`document.getElementById('menu').classList.contains('open')`)), 'the tab closes the room menu without switching, and opens nothing else');
@@ -242,8 +235,7 @@ export async function livingSpot() {
   check(await p.eval(`(() => { const v = document.querySelector('.view.active'); return v.querySelectorAll('.lights > .tile').length === 5 && v.querySelector('.lights > .media').hidden && v.querySelectorAll(':scope > .dots span').length === 3; })()`), 'five lights in one strip (three places to rest); the media card hidden while the projector is off');
   await p.shot('spot-living.png');
   await p.tapSel('.view.active .chip:nth-child(1)');
-  let st = await mockStates();
-  check(st['input_boolean.projector'].s === 'on', 'projector chip runs the turn-on script');
+  check(await mockReaches((s) => s['input_boolean.projector'].s === 'on'), 'projector chip runs the turn-on script');
   check(await p.waitFor(`!document.querySelector('.view.active .lights > .media').hidden && document.querySelectorAll('.view.active > .dots span').length === 5`), 'the media card joins the end of the strip when the projector is on');
   await p.eval(`document.querySelector('.view.active .lights').scrollTo({ left: 1e4, behavior: 'instant' }), true`);
   await sleep(500);
@@ -254,8 +246,7 @@ export async function livingSpot() {
     return pts.every(([x, y]) => Math.hypot(x - 240, y - 240) < 240 * (50 - 3.6) / 50) && t.scrollWidth <= t.clientWidth; })()`), 'spot: the media card fits inside the rim with all its buttons');
   await p.shot('spot-living-media.png');
   await p.tapSel('.view.active .media-btn.play');
-  st = await mockStates();
-  check(st['media_player.apple_tv'].s === 'paused', 'play/pause pauses the Apple TV');
+  check(await mockReaches((s) => s['media_player.apple_tv'].s === 'paused'), 'play/pause pauses the Apple TV');
   // The menu: a ring in the middle of the screen, opened from its tab.
   check(!(await onScreen(p, '#menu .ring-item')), 'the menu is out of sight until opened');
   await p.tapSel('#menu-handle');
@@ -272,8 +263,7 @@ export async function livingSpot() {
   check(await p.waitFor(`!document.getElementById('menu').classList.contains('open')`), 'choosing an item closes the menu');
   check((await text(p, '#toast')).includes('Kiosk Satellite'), 'outside Kiosk Satellite a ks:// link only explains itself');
   await p.tapSel('.view.active .chip:nth-child(1)');
-  st = await mockStates();
-  check(st['input_boolean.projector'].s === 'off', 'projector chip runs the turn-off script');
+  check(await mockReaches((s) => s['input_boolean.projector'].s === 'off'), 'projector chip runs the turn-off script');
 
   // The menu closes on a tap anywhere but on an item, over a dark backdrop, and on its close button.
   await p.tapSel('#menu-handle');
@@ -327,9 +317,9 @@ export async function livingSpot() {
   check(await p.waitFor(`${ringNames} === ${JSON.stringify(PLAYLISTS)}`) && await menuOpen(p) && (await text(p, '#menu .fav-switch .on')) === 'Playlists', 'Playlists brings the favourite playlists in the radios\' place, the menu still open');
   await p.tapSel('#menu .ring-item:nth-child(2)');
   check(await p.waitFor(`!document.getElementById('menu').classList.contains('open')`), 'picking a playlist closes the menu');
-  let last = await lastCall();
   const livingPlayer = await p.eval(`window.KIOSK_CONFIG.rooms.living.player`);
-  check(last.domain === 'music_assistant' && last.service === 'play_media' && last.target.entity_id === livingPlayer && last.data.media_id === 'spotify://playlist/mock-discover-weekly' && last.data.media_type === 'playlist', `the playlist plays through Music Assistant on the living room's player (got ${JSON.stringify(last)})`);
+  check(await callReaches((c) => c.domain === 'music_assistant' && c.service === 'play_media' && c.target.entity_id === livingPlayer && c.data.media_id === 'spotify://playlist/mock-discover-weekly' && c.data.media_type === 'playlist'),
+    `the playlist plays through Music Assistant on the living room's player (got ${JSON.stringify(await lastCall())})`);
   check(await p.waitFor(`document.getElementById('toast').textContent === 'Music · Discover Weekly'`), 'a toast says which playlist was asked for');
   await p.tapSel('#menu-handle');
   await sleep(350);
@@ -337,8 +327,7 @@ export async function livingSpot() {
   await p.tapSel('#menu .ring-item:nth-child(5)');
   await sleep(350);
   await p.tapSel('#menu .ring-item:nth-child(1)');
-  last = await lastCall();
-  check(last.domain === 'script' && last.service === 'turn_on' && last.target.entity_id === phones[0].script && await p.waitFor(`document.getElementById('toast').textContent === 'Find my phone · Alex'`) && !(await menuOpen(p)), 'Find my phone · Alex runs the script, closes the menu and says so');
+  check(await callReaches((c) => c.domain === 'script' && c.service === 'turn_on' && c.target.entity_id === phones[0].script) && await p.waitFor(`document.getElementById('toast').textContent === 'Find my phone · Alex'`) && !(await menuOpen(p)), 'Find my phone · Alex runs the script, closes the menu and says so');
 
   // The kind picked stays. Each time Music opens it asks Music Assistant again: with no favourite playlists left
   // it says so, Back alone in the middle; twelve favourite radios make a ring of the first ten by name.
@@ -384,7 +373,7 @@ export async function livingSpot() {
   const [lastSlider, popTab] = [await p.eval(`(() => { const r = [...document.querySelectorAll('#popover .pane:not([hidden]) .slider')].pop().getBoundingClientRect(); return { b: r.bottom }; })()`), await p.rect('#pop-tab')];
   check(lastSlider.b < popTab.t && await insideRim(p, '#popover .pane:not([hidden]) > .slider:last-child'), `spot popover: scrolled to the end, the last control clears the tab and the rim (${lastSlider.b.toFixed(0)}px, tab at ${popTab.t.toFixed(0)}px)`);
   await p.dragTo('#popover .pane:not([hidden]) > .slider:last-child', 0.9);
-  check(Number((await mockStates())['number.tv_strip_intensity'].s) >= 220, 'spot popover: the intensity slider sets the number');
+  check(await mockReaches((s) => Number(s['number.tv_strip_intensity'].s) >= 220), 'spot popover: the intensity slider sets the number');
   await mockSet('number.tv_strip_intensity', '128');
   await p.tapSel('#pop-tab');
   check(await p.waitFor(`document.getElementById('popover').hidden`), 'and the tab closes it');

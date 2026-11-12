@@ -21,6 +21,21 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const failures = [];
 const check = (ok, what) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}`); if (!ok) failures.push(what); };
 
+/* ------------------------------------------------------------ mock */
+// The mock must be this folder's, started since tools/mock-ha.mjs last changed: one left running from older code,
+// or from another folder, would answer for code other than the one checked. If not, the run stops here, before
+// Chrome starts, with one line saying what to do.
+{
+  const restart = 'pkill -f tools/mock-ha.mjs, then node tools/mock-ha.mjs & from this folder';
+  const stop = (why) => { console.error(why); process.exit(1); };
+  const res = await fetch(BASE + '/__mock', { signal: AbortSignal.timeout(5000) }).catch(() => null);
+  if (!res) stop(`No mock Home Assistant on ${BASE}: start it with node tools/mock-ha.mjs &`);
+  const mock = await res.json().catch(() => null);
+  if (!mock?.root || !mock.started) stop(`What answers on ${BASE} is not a mock of this folder's code (an older mock, or another server on that port): ${restart}`);
+  if (mock.root !== ROOT) stop(`The mock on ${BASE} serves ${mock.root}, not this folder, ${ROOT}: ${restart}`);
+  if (mock.started < fs.statSync(path.join(ROOT, 'tools', 'mock-ha.mjs')).mtimeMs) stop(`The mock on ${BASE} started before tools/mock-ha.mjs last changed: ${restart}`);
+}
+
 /* ---------------------------------------------------------- chrome */
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'kiosk-shoot-'));
 const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--remote-allow-origins=*', `--user-data-dir=${profile}`,
@@ -95,7 +110,9 @@ async function openPage(width, height, scale = 1) {
     async waitFor(expr, ms = 6000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { try { if (await this.eval(expr)) return true; } catch { /* navigating */ } await sleep(100); } return false; },
     async rect(sel) { return this.eval(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, l: r.left, t: r.top, w: r.width, h: r.height }; })()`); },
     async touch(type, points) { await s('Input.dispatchTouchEvent', { type, touchPoints: points }); },
-    async tap(x, y) { await this.touch('touchStart', [{ x, y }]); await sleep(60); await this.touch('touchEnd', []); },
+    // A tap: the finger lifted as it lands, both sent at once, so that however slow the run, the page never holds it
+    // long enough to take it for a long-press.
+    async tap(x, y) { await Promise.all([this.touch('touchStart', [{ x, y }]), this.touch('touchEnd', [])]); },
     async tapSel(sel) { const r = await this.rect(sel); if (!r) throw new Error('no element ' + sel); await this.tap(r.x, r.y); await sleep(300); },
     async longPress(x, y, ms = 700) { await this.touch('touchStart', [{ x, y }]); await sleep(ms); await this.touch('touchEnd', []); },
     async drag(x1, y1, x2, y2, steps = 10) {
@@ -138,16 +155,21 @@ async function openPage(width, height, scale = 1) {
       }
     },
     // The layers Chrome composites the page from, each that draws something as { w, h }: the graphics memory
-    // the page takes. Chrome reports them as they change, so the page changes once while it listens.
+    // the page takes. Chrome reports them as they change, so the page changes while it listens, again until a
+    // report with a layer that draws comes, 5 s at most (a slow machine can take longer than one change); none: [].
     async layers() {
       layerTrees.delete(sessionId);
       await s('LayerTree.enable');
-      await this.eval(`document.body.style.opacity = '0.99', true`);
-      await sleep(300);
-      await this.eval(`document.body.style.opacity = '', true`);
-      await sleep(100);
+      let drawn = [];
+      for (const t0 = Date.now(); !drawn.length && Date.now() - t0 < 5000;) {
+        await this.eval(`document.body.style.opacity = '0.99', true`);
+        await sleep(300);
+        await this.eval(`document.body.style.opacity = '', true`);
+        await sleep(100);
+        drawn = (layerTrees.get(sessionId) || []).filter((l) => l.drawsContent);
+      }
       await s('LayerTree.disable');
-      return (layerTrees.get(sessionId) || []).filter((l) => l.drawsContent).map((l) => ({ w: l.width, h: l.height }));
+      return drawn.map((l) => ({ w: l.width, h: l.height }));
     },
     async close() { await cdp('Target.closeTarget', { targetId }); },
   };
@@ -156,15 +178,24 @@ async function openPage(width, height, scale = 1) {
 const reduceWait = 650; // let entrance animations finish before a screenshot
 const seed = (page) => page.eval(`localStorage.setItem('hassTokens', JSON.stringify({ access_token: 'mock-seed', token_type: 'Bearer', expires_in: 1800, expires: Date.now() + 315360000000, hassUrl: location.origin, clientId: location.origin + '/' })), true`);
 const mockStates = async () => (await fetch(BASE + '/__states')).json();
-// Waits until the mock's states pass `ok`, as a call can take a while to reach it on a slow machine; false after `ms`.
-async function mockReaches(ok, ms = 3000) {
-  const t0 = Date.now();
-  do { if (ok(await mockStates())) return true; await sleep(100); } while (Date.now() - t0 < ms);
-  return false;
-}
 const mockSet = (entity, state) => fetch(BASE + '/__set', { method: 'POST', body: JSON.stringify({ entity, state }) });
 const callLog = async () => (await fetch(BASE + '/__calls')).json();
 const lastCall = async () => { const calls = await callLog(); return calls[calls.length - 1] || {}; };
+// Reads again until what it reads passes `ok`, as a call can take a while to reach the mock on a slow machine;
+// false after `ms`. A test that throws on what it reads (the call log still empty after a reset, so lastCall()
+// gives {}, say) is not passed yet.
+async function until(read, ok, ms) {
+  const t0 = Date.now();
+  do {
+    const got = await read();
+    try { if (ok(got)) return true; } catch { /* not there yet */ }
+    await sleep(100);
+  } while (Date.now() - t0 < ms);
+  return false;
+}
+// After a tap or a drag: the mock's states, or the last call the page made, once they pass `ok`; false after 3 s.
+const mockReaches = (ok, ms = 3000) => until(mockStates, ok, ms);
+const callReaches = (ok, ms = 3000) => until(lastCall, ok, ms);
 const setLibrary = (lib) => fetch(BASE + '/__library', { method: 'POST', body: JSON.stringify(lib) });   // null: as it was
 const failCalls = (on) => fetch(BASE + '/__fail', { method: 'POST', body: JSON.stringify({ on }) });   // the mock refuses every call meanwhile
 const slowFile = (file, ms) => fetch(BASE + '/__slow', { method: 'POST', body: JSON.stringify({ file, ms }) });   // 0: at once again
@@ -246,6 +277,6 @@ async function finish() {
 }
 
 export {
-  check, openPage, failPictures, pictureReferers, ROOT_ITEMS, has, menuOpen, load, sleep, text, insideRim, mockStates, mockReaches, activeRoom, mockSet, lastCall, RADIOS, PLAYLISTS, lightsOn, onScreen, tapTab, BASE, connected, callLog, setLibrary, RING_FITS, SWITCH_GAP, POP_PARTS, reset, finish,
+  check, openPage, failPictures, pictureReferers, ROOT_ITEMS, has, menuOpen, load, sleep, text, insideRim, mockStates, mockReaches, callReaches, activeRoom, mockSet, lastCall, RADIOS, PLAYLISTS, lightsOn, onScreen, tapTab, BASE, connected, callLog, setLibrary, RING_FITS, SWITCH_GAP, POP_PARTS, reset, finish,
   failCalls, slowFile, tokenLife, dropConnections, authLog, setClock, changeRoom, addEvent, noEvents,
 };

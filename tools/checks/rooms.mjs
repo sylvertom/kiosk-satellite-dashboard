@@ -1,5 +1,5 @@
 // Checks of the room menu: turning lights off, a house of seven rooms.
-import { sleep, check, openPage, mockStates, mockSet, text, has, activeRoom, load } from './harness.mjs';
+import { sleep, check, openPage, mockStates, mockReaches, mockSet, text, has, activeRoom, load } from './harness.mjs';
 
 // 6. Lights off from the room menu: a room's power button in the Spot's list, then every light from the Show's
 //    grid. The menu stays open on the same room, and what it says follows. The living room also shows the
@@ -14,9 +14,8 @@ export async function lightsOff() {
     await p.tapSel('.view.active .title-btn');
     await sleep(400);
     await p.tapSel('#room-menu .room-card:nth-child(2) .room-off');
-    await sleep(100);
-    const st = await mockStates();
-    check(['light.downstairs', 'light.living_room', 'light.dining_room', 'light.kitchen', 'light.tv_strip', 'light.shelf_strip'].every((id) => st[id].s === 'off'), 'spot: the living room\'s power button turns off its lights');
+    check(await mockReaches((s) => ['light.downstairs', 'light.living_room', 'light.dining_room', 'light.kitchen', 'light.tv_strip', 'light.shelf_strip'].every((id) => s[id].s === 'off')), 'spot: the living room\'s power button turns off its lights');
+    const st = await mockStates();   // now they are off, what must stay on, read at once
     check(st['light.bedroom_ceiling'].s === 'on' && st['light.office_lights'].s === 'on', 'and only those: the bedroom\'s ceiling, a tile in the living room, stays on');
     check(await p.waitFor(`document.querySelector('#room-menu .room-card:nth-child(2) .room-off').hidden && document.querySelector('#room-menu .room-card:nth-child(2) .room-state').textContent === 'Lights off'`) && await p.eval(`document.getElementById('room-menu').classList.contains('open')`) && (await activeRoom(p)) === 'bedroom', 'its row says Lights off without a power button, the menu stays open on the same room');
     await p.shot('spot-rooms-off.png');
@@ -30,8 +29,7 @@ export async function lightsOff() {
     check((await text(p, '#room-menu .room-card:nth-child(2) .room-state')) === 'Lights off' && await p.eval(`document.querySelector('#room-menu .room-card:nth-child(2) .room-off').hidden`), 'show 8: a room with its lights off says so, and has no power button');
     await p.tapSel('#room-menu .room-card.all-off .room-go');
     check(await p.waitFor(`[...document.querySelectorAll('#room-menu .room-state')].every((e) => e.textContent === 'Lights off') && document.querySelector('#room-menu .all-off').classList.contains('idle')`), 'All lights off: every card then says so, and the button fades');
-    const st = await mockStates();
-    check(Object.entries(st).filter(([id]) => id.startsWith('light.')).every(([, s]) => s.s === 'off'), 'All lights off turns off every light');
+    check(await mockReaches((st) => Object.entries(st).filter(([id]) => id.startsWith('light.')).every(([, s]) => s.s === 'off')), 'All lights off turns off every light');
     check(await p.eval(`document.getElementById('room-menu').classList.contains('open')`) && (await activeRoom(p)) === 'living', 'the grid stays open on the same room');
     await p.shot('show8-rooms-off.png');
     await p.close();
@@ -62,9 +60,9 @@ export async function mainWithoutMembers() {
   await mockSet('light.tv_strip', 'on');
   await p.waitFor(`document.querySelector('${living}').textContent === '1 light on'`);
   await p.tapSel('#room-menu .room-card:nth-child(2) .room-off');
-  await sleep(100);
-  const st = await mockStates();
-  check(['light.living_room', 'light.tv_strip', 'light.shelf_strip'].every((id) => st[id].s === 'off') && st['light.bedroom_lights'].s === 'on' && st['light.office_lights'].s === 'on', 'its power button turns off its main light and its own tiles, and leaves the other rooms\' lights on');
+  const off = await mockReaches((s) => ['light.living_room', 'light.tv_strip', 'light.shelf_strip'].every((id) => s[id].s === 'off'));
+  const st = await mockStates();   // now they are off, what must stay on, read at once
+  check(off && st['light.bedroom_lights'].s === 'on' && st['light.office_lights'].s === 'on', 'its power button turns off its main light and its own tiles, and leaves the other rooms\' lights on');
   await p.close();
 }
 
