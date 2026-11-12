@@ -22,18 +22,21 @@ const failures = [];
 const check = (ok, what) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}`); if (!ok) failures.push(what); };
 
 /* ------------------------------------------------------------ mock */
-// The mock must be this folder's, started since tools/mock-ha.mjs last changed: one left running from older code,
-// or from another folder, would answer for code other than the one checked. If not, the run stops here, before
-// Chrome starts, with one line saying what to do.
+// The mock must be this folder's, started since tools/mock-ha.mjs last changed, and serve this folder's
+// config.example.js: one left running from older code, or from another folder, would answer for code other than the
+// one checked, and one started with --config naming another file would show another house, whose entities the checks
+// don't know (and with --docs, put it in the tracked docs/images/). If not, the run stops here, before Chrome
+// starts, with one line saying what to do.
 {
   const restart = 'pkill -f tools/mock-ha.mjs, then node tools/mock-ha.mjs & from this folder';
   const stop = (why) => { console.error(why); process.exit(1); };
   const res = await fetch(BASE + '/__mock', { signal: AbortSignal.timeout(5000) }).catch(() => null);
   if (!res) stop(`No mock Home Assistant on ${BASE}: start it with node tools/mock-ha.mjs &`);
   const mock = await res.json().catch(() => null);
-  if (!mock?.root || !mock.started) stop(`What answers on ${BASE} is not a mock of this folder's code (an older mock, or another server on that port): ${restart}`);
+  if (!mock?.root || !mock.config || !mock.started) stop(`What answers on ${BASE} is not a mock of this folder's code (an older mock, or another server on that port): ${restart}`);
   if (mock.root !== ROOT) stop(`The mock on ${BASE} serves ${mock.root}, not this folder, ${ROOT}: ${restart}`);
   if (mock.started < fs.statSync(path.join(ROOT, 'tools', 'mock-ha.mjs')).mtimeMs) stop(`The mock on ${BASE} started before tools/mock-ha.mjs last changed: ${restart}`);
+  if (mock.config !== path.join(ROOT, 'config.example.js')) stop(`The mock on ${BASE} serves ${mock.config} as config.js, not this folder's config.example.js, the house the checks know: ${restart}, without --config`);
 }
 
 /* ---------------------------------------------------------- chrome */
