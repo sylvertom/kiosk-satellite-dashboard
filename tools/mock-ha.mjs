@@ -436,8 +436,9 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-  // test hook: the folder this mock serves and when it started, for the checks to refuse another folder's or an older one
-  if (url.pathname === '/__mock') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ root: ROOT, started: STARTED })); return; }
+  // test hook: the folder this mock serves, the file it serves as config.js and when it started, for the checks to
+  // refuse another folder's, one serving another house than config.example.js, or an older one
+  if (url.pathname === '/__mock') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ root: ROOT, config: CONFIG, started: STARTED })); return; }
   if (url.pathname === '/__states') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(states)); return; }
   if (url.pathname === '/__set' && req.method === 'POST') { // test hook: {entity, state}
     let body = '';
